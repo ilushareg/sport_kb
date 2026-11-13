@@ -215,4 +215,42 @@ test('warmup remains available on weekends', () => {
   env.action('randomwarmup'); env.action('startsession'); assert.equal(env.app.state.view, 'session');
 });
 
+test('outdoor walking replaces only the walking block and a new session restores it', () => {
+  for (const week of ['A', 'B']) for (const idx of [2, 4]) {
+    const env = loadApp(), { app } = env;
+    app.show('day'); app.renderDay(week, idx);
+    assert.match(app.els.day.innerHTML, /outdoorwalkdone/);
+    env.action('outdoorwalkdone');
+    assert.equal(app.state.view, 'session');
+    assert.equal(app.state.steps[app.state.stepPos].id, idx === 2 ? 'deadbug' : 'mobility');
+    assert.equal(app.timer, null);
+    app.exitSession(); app.startSession(week, idx);
+    assert.equal(app.state.stepPos, 0);
+    assert.equal(app.state.steps[0].id, 'treadmill');
+  }
+});
+
+test('outdoor-walk action cannot skip strength or warmup exercises', () => {
+  const env = loadApp(), { app } = env;
+  app.show('day'); app.renderDay('A', 0); env.action('outdoorwalkdone');
+  assert.equal(app.state.view, 'day');
+  env.action('randomwarmup'); env.action('outdoorwalkdone');
+  assert.equal(app.state.view, 'day');
+});
+
+test('both weeks keep squat volume and Friday recovery without mandatory intervals', () => {
+  const { app } = loadApp();
+  for (const week of ['A', 'B']) {
+    for (const idx of [1, 3]) {
+      assert.equal(app.PROGRAM[week][idx].ex[0].sets, 2);
+      app.renderDay(week, idx);
+      assert.doesNotMatch(app.els.day.innerHTML, /data-action="squatsets"/);
+    }
+    assert.equal(app.PROGRAM[week][2].ex[0].id, 'treadmill');
+    assert.match(app.PROGRAM[week][4].ex[0].target, /easy recovery/);
+    app.renderDay(week, 4);
+    assert.match(app.els.day.innerHTML, /Recovery day/);
+  }
+});
+
 module.exports = { loadApp };

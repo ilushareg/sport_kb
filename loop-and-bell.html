@@ -490,7 +490,7 @@
     },
     {
       "title": "Walk & Core",
-      "sub": "30-minute walk + two trunk exercises",
+      "sub": "Outdoor walk or treadmill + core",
       "ex": [
         {
           "id": "treadmill",
@@ -558,13 +558,13 @@
     },
     {
       "title": "Walk & Mobility",
-      "sub": "30-minute walk + gentle mobility",
+      "sub": "Easy outdoor walk or treadmill + gentle mobility",
       "ex": [
         {
           "id": "treadmill",
           "sets": 1,
           "type": "time",
-          "target": "30 min · build up gradually",
+          "target": "30 min · easy recovery pace",
           "dur": 1800,
           "rest": 30
         },
@@ -675,11 +675,11 @@
       ]
     },
     {
-      "title": "Walk Intervals & Core",
-      "sub": "30-minute walk + two trunk exercises",
+      "title": "Walk & Core",
+      "sub": "Outdoor walk or treadmill + core",
       "ex": [
         {
-          "id": "treadmillint",
+          "id": "treadmill",
           "sets": 1,
           "type": "time",
           "target": "30 min · build up gradually",
@@ -744,13 +744,13 @@
     },
     {
       "title": "Walk & Mobility",
-      "sub": "30-minute walk + gentle mobility",
+      "sub": "Easy outdoor walk or treadmill + gentle mobility",
       "ex": [
         {
           "id": "treadmill",
           "sets": 1,
           "type": "time",
-          "target": "30 min · build up gradually",
+          "target": "30 min · easy recovery pace",
           "dur": 1800,
           "rest": 30
         },
@@ -850,8 +850,7 @@
     set:function(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
   };
   var soundOn = store.get("loopbell.sound", true);
-  var squatSets=store.get('loopbell.squatsets',2)===3?3:2;
-  ['A','B'].forEach(function(w){[1,3].forEach(function(i){PROGRAM[w][i].ex[0].sets=squatSets;});});
+  // Keep the current squat volume; old preferences must not add workload.
 
   /* ============================================================
      6. AUDIO + WAKE LOCK
@@ -1024,7 +1023,7 @@
     }
     html += '</div>';
 
-    html += '<div class="infobar">&#9432;&nbsp; Three strength days + two walking days. Add short walks on other days and build toward 150–300 moderate minutes per week. Progress when your form and recovery are ready.</div>';
+    html += '<div class="infobar">&#9432;&nbsp; Three strength days; keep your daily 30–45-minute walks. Outdoor walking counts toward the walking sessions. Keep Friday easy and review recovery before adding workload.</div>';
 
     els.home.innerHTML = html;
   }
@@ -1039,9 +1038,10 @@
 
     if(week!=='R'){
       if(idx===0 || idx===1 || idx===3) html+='<div class="infobar">Warm up: 5–8 minutes of easy walking or marching, then one easy practice set of your first movements. Finish working sets with 2–3 good reps available.</div>';
-      if(idx===1 || idx===3) html+='<div class="card compact"><p class="cue">Start squats with 2 sets for two weeks. Choose 3 when movement and recovery are comfortable.</p><button class="btn btn-ghost btn-block" data-action="squatsets">Squat sets: '+PROGRAM[week][idx].ex[0].sets+' · change to '+(PROGRAM[week][idx].ex[0].sets===2?3:2)+'</button></div>';
-      if(idx===2 || idx===4) html+='<div class="infobar">30 minutes is a target to build toward. You can finish earlier if needed. Include an easy start and finish; add shorter walks on other days.</div>';
-      if(week==='B') html+='<p class="plan-note">Week B adds walking variety. Strength targets stay consistent; increase reps or load only when you are ready.</p>';
+      if(idx===0 || idx===1 || idx===3) html+='<div class="card compact"><p class="cue">Keep the current sets; squats stay at 2 sets. Finish with about 2 good reps available (3 for squats). Once every set reaches the top of its range comfortably for two sessions, increase difficulty for one exercise and return to the lower rep target. Keep swings crisp; stop before technique slips. If fatigue builds or performance falls, ease the hardest exercise instead.</p></div>';
+      if(idx===2) html+='<div class="infobar">Your outdoor walk can replace this treadmill block: aim for 30 minutes at a pace where you can talk but would struggle to sing. Include an easy start and finish. If that walk is already done, start with core below.</div>';
+      if(idx===4) html+='<div class="infobar">Recovery day: keep walking easy and comfortable, then move gently through mobility. Your daily outdoor walk can replace the treadmill block. No extra speed, intervals or volume to chase today.</div>';
+      if(week==='B') html+='<p class="plan-note">Week B keeps the same workload. Progress depends on form and recovery, not the calendar.</p>';
     }
     html += '<div class="exlist">';
     d.ex.forEach(function(item, i){
@@ -1058,7 +1058,10 @@
     });
     html += '</div>';
     if(week==='R') html += '<div class="warmup-actions"><button class="btn btn-ghost" data-action="reshuffle">Shuffle again</button><button class="btn btn-rest" data-action="startsession">Start 15-minute session</button></div>';
-    else html += '<button class="btn btn-primary btn-block" data-action="startsession">Start Session</button>';
+    else {
+      if(idx===2 || idx===4) html += '<button class="btn btn-secondary btn-block" data-action="outdoorwalkdone">Outdoor walk done · start '+(idx===2?'core':'mobility')+'</button>';
+      html += '<button class="btn btn-primary btn-block" data-action="startsession">Start '+(idx===2 || idx===4?'with treadmill':'Session')+'</button>';
+    }
     els.day.innerHTML = html;
   }
 
@@ -1256,10 +1259,13 @@
       '<div class="overlay" data-action="closemodal"><div class="sheet" role="dialog" aria-modal="true" aria-label="About this program" tabindex="-1">'+
         '<h3>About this program</h3>'+
         '<div class="cue">A two-week loop for fat loss and strength: upper body Monday, legs Tuesday, walking and core Wednesday, full body Thursday, walking and mobility Friday. Use your kettlebell, pull-up bar, treadmill, chair and floor.</div>'+
-        '<div class="cue"><strong>Leg training:</strong> squat twice weekly, starting with 2 sets of 8–12. After two comfortable weeks, choose 3 sets on a leg-day screen. Train through a controlled, comfortable range.</div>'+
+        '<div class="cue"><strong>Leg training:</strong> squat twice weekly, keeping 2 sets of 8–12 and about 3 good reps available. Train through a controlled, comfortable range. No automatic increase in sets.</div>'+
         '<div class="cue"><strong>Warmup &amp; stretch:</strong> the random session starts with easy stepping, adds six mobility movements covering shoulders, trunk, hips and ankles, then finishes with three gentle stretches. It takes 15 minutes with the default transitions and no pauses. Use a comfortable talking pace; avoid bouncing into stretches.</div>'+
         '<div class="cue"><strong>Load &amp; sides:</strong> choose a load you can control; one 12kg bell will not suit every movement. Use less weight for presses if needed and progress lower-body resistance when it becomes easy. Rep targets marked per side include both sides; floor presses also use both sides. Timed side planks have separate left and right holds.</div>'+
-        '<div class="cue"><strong>Progression:</strong> finish with 2–3 good reps available. Reach the top of your range with consistent form before adding reps or resistance. Week B is variety, not a mandatory difficulty increase. Rest longer when needed; pull-ups use 2–3 minutes.</div>'+
+        '<div class="cue"><strong>Progression:</strong> keep the current workload initially. Finish strength sets with about 2 good reps available (3 for squats). After two sessions at the top of every set range with sound form and good recovery, increase difficulty for one exercise and return to the lower rep target. Do not increase sets, reps and walking intensity together. Keep existing rests; rest longer if needed.</div>'+
+        '<div class="cue"><strong>Walking &amp; recovery:</strong> daily 30–45-minute walks count. A 30-minute brisk outdoor walk can replace Wednesday treadmill time; moderate effort means you can talk but would struggle to sing. Friday stays easy: your comfortable outdoor walk can replace treadmill time, followed by mobility. Week B has the same workload. If fatigue builds, performance falls or joint pain returns, reduce training.</div>'+
+        '<div class="cue"><strong>Weight-loss review:</strong> for two weeks, note comparable morning weights, weekly average weight, a weekly waist measurement, strength performance and recovery after the weekend. If weight and waist stay unchanged for several weeks, review food portions, drinks and snacks before adding hard training. This app does not save these measurements. Persistent unexplained fatigue deserves medical review.</div>'+
+        '<div class="cue"><strong>Evidence:</strong> <a href="https://acsm.org/resistance-training-guidelines-update-2026/" target="_blank" rel="noopener noreferrer">ACSM resistance training guidance (2026)</a> supports consistent, individualised training without routinely reaching failure. <a href="https://bmjopensem.bmj.com/content/11/3/e002363" target="_blank" rel="noopener noreferrer">A 2025 systematic review</a> supports resistance exercise to preserve muscle during dietary weight loss. <a href="https://www.cdc.gov/physical-activity-basics/measuring/index.html" target="_blank" rel="noopener noreferrer">CDC intensity guidance</a> explains the talk test; <a href="https://www.cdc.gov/healthy-weight-growth/physical-activity/index.html" target="_blank" rel="noopener noreferrer">CDC weight guidance</a> explains combining activity with dietary changes. The two-session progression rule and easier Friday are practical coaching choices, not a trial-tested weight-loss prescription.</div>'+
         '<div class="cue"><strong>Rest days:</strong> weekends are open &mdash; walk, stretch, or fully recover.</div>'+
         '<div class="cue" style="color:var(--muted);">Stop if you feel sharp or joint pain, dizziness, or unusual breathlessness. Persistent pain is a reason to ask a physiotherapist or doctor. Illustrations show key positions; follow the written setup, range and easier options.</div>'+
         '<div class="cue"><strong>Further guidance:</strong> <a href="https://www.nhs.uk/live-well/exercise/how-to-warm-up-before-exercising/" target="_blank" rel="noopener noreferrer">NHS warmup</a> · <a href="https://www.nhs.uk/live-well/exercise/flexibility-exercises/" target="_blank" rel="noopener noreferrer">NHS flexibility</a> · <a href="https://www.acefitness.org/resources/everyone/exercise-library/" target="_blank" rel="noopener noreferrer">ACE exercise library</a>.</div>'+
@@ -1288,11 +1294,12 @@
 
     if(action==="home"){ clearTimers(); show("home"); renderHome(); }
     else if(action==="randomwarmup"){ createWarmup();show('day');renderDay('R',0); }
-    else if(action==="squatsets"){
-      var sets=PROGRAM[state.dayWeek][state.dayIdx].ex[0].sets===2?3:2;
-      store.set('loopbell.squatsets',sets);
-      ['A','B'].forEach(function(w){[1,3].forEach(function(i){PROGRAM[w][i].ex[0].sets=sets;});});
-      renderDay(state.dayWeek,state.dayIdx);
+    else if(action==="outdoorwalkdone"){
+      if(state.view!=='day' || !['A','B'].includes(state.dayWeek) || ![2,4].includes(state.dayIdx)) return;
+      ensureAudio();
+      startSession(state.dayWeek,state.dayIdx);
+      state.stepPos=1;
+      renderSessionStep();
     }
     else if(action==="reshuffle"){ createWarmup();renderDay('R',0); }
     else if(action==="opendaytoday"){ if(info.isWorkday){ show("day"); renderDay(info.week, info.idx); } }

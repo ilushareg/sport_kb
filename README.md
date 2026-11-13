@@ -38,6 +38,12 @@ git push origin main
 
 ## What changed
 
+- Keep three strength days and current set counts, including two squat sets. The previous three-set preference is no longer applied.
+- Wednesday offers an **Outdoor walk done · start core** button; Friday offers the equivalent for mobility. These skip the treadmill only for that session. Starting another session includes the treadmill again.
+- Friday is easy walking and mobility. Both weeks use steady Wednesday walking; intervals are no longer mandatory.
+- Day screens and About explain recovery and progression: keep about two good reps available (three for squats), then increase difficulty for one exercise after two comfortable sessions at the top of its rep range. Existing rests stay unchanged.
+- About links to [ACSM 2026 resistance training guidance](https://acsm.org/resistance-training-guidelines-update-2026/), [the 2025 resistance-training and dietary-weight-loss review](https://bmjopensem.bmj.com/content/11/3/e002363), [CDC walking intensity guidance](https://www.cdc.gov/physical-activity-basics/measuring/index.html), and [CDC activity and weight guidance](https://www.cdc.gov/healthy-weight-growth/physical-activity/index.html). The exact progression rule and easier Friday are coaching choices informed by the evidence, not a clinically tested programme.
+
 - All 31 original exercise descriptions now include setup, movement, breathing, common mistakes, and easier options.
 - The current S3 version uses static WebP exercise illustrations, including 28 embedded images. It also references 16 separate images under `assets/exercises/`; the source server currently returns HTTP 403 for those files, so those illustrations are unavailable. The application HTML is preserved as supplied.
 - **Random warmup / stretch** creates 12 stations from 15 standing options: three easy stepping movements, six randomly selected mobility exercises covering upper body, trunk and lower body, and three stretches. Preview the exercises, shuffle again, then start.
@@ -52,7 +58,7 @@ Requires Node.js 20 or newer:
 node --test tests/loop-and-bell.test.cjs
 ```
 
-The 15 checks use the actual application script with a lightweight DOM and controlled clock. They cover exercise metadata, randomization, duration, progression, pause/resume, side switches, exits, both-side holds, reduced motion, previews, and schedule navigation. They do not substitute for browser layout testing.
+The 18 checks use the actual application script with a lightweight DOM and controlled clock. They cover exercise metadata, randomization, duration, progression, pause/resume, side switches, exits, both-side holds, reduced motion, previews, schedule navigation, outdoor-walk substitution and recovery-day defaults. They do not substitute for browser layout testing.
 
 For a browser check, use a narrow viewport, preview an exercise, then start a warmup and exercise the pause, skip, transition and exit controls. Repeat with reduced motion and dark mode enabled. The tests validate image references and embedded WebP integrity; they do not certify that external images are available.
 
