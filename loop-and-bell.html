@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop &amp; Bell</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EFF1EC;
+    --surface:#FFFFFF;
+    --surface-2:#E4E7DF;
+    --text:#22241F;
+    --muted:#666A5F;
+    --border:#DBDED4;
+    --accent:#C1652E;
+    --accent-ink:#FFFFFF;
+    --rest:#3E8E86;
+    --rest-ink:#FFFFFF;
+    --ok:#5C7F44;
+    --ok-soft:#E4EBDA;
+    --shadow: 0 1px 2px rgba(30,30,20,0.06), 0 6px 16px rgba(30,30,20,0.06);
+    --font-display:"Big Shoulders Display", "Arial Narrow", sans-serif;
+    --font-body:"Public Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16181A;
+      --surface:#1F2224;
+      --surface-2:#2A2D2A;
+      --text:#ECEAE2;
+      --muted:#9A9D95;
+      --border:#33362F;
+      --accent:#DD8148;
+      --accent-ink:#1A1200;
+      --rest:#4FB0A7;
+      --rest-ink:#08201E;
+      --ok:#8FBB6E;
+      --ok-soft:#26301F;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16181A;
+    --surface:#1F2224;
+    --surface-2:#2A2D2A;
+    --text:#ECEAE2;
+    --muted:#9A9D95;
+    --border:#33362F;
+    --accent:#DD8148;
+    --accent-ink:#1A1200;
+    --rest:#4FB0A7;
+    --rest-ink:#08201E;
+    --ok:#8FBB6E;
+    --ok-soft:#26301F;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-tap-highlight-color:transparent;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    padding:0 16px;
+    padding-block:14px 28px;
+  }
+  h1,h2,h3{font-family:var(--font-display); font-weight:700; margin:0; text-wrap:balance; letter-spacing:0.2px;}
+  p{margin:0;}
+  button{font-family:var(--font-body); cursor:pointer;}
+  .hidden{display:none !important;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex; align-items:baseline; justify-content:space-between;
+    padding-block:2px 14px;
+  }
+  .brand{font-family:var(--font-display); font-size:26px; font-weight:800; letter-spacing:0.3px;}
+  .brand span{color:var(--accent);}
+  .topbar-right{display:flex; gap:10px; align-items:center;}
+  .icon-btn{
+    width:34px; height:34px; border-radius:10px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text); display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+  }
+  .icon-btn:active{transform:scale(0.95);}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:16px;
+    box-shadow:var(--shadow);
+  }
+  .stack{display:flex; flex-direction:column; gap:14px;}
+
+  .today-date{
+    font-size:13px; color:var(--muted); font-weight:600;
+    text-transform:uppercase; letter-spacing:0.06em;
+    padding-block:0 6px;
+  }
+
+  .hero{
+    border-left:4px solid var(--accent);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .hero .eyebrow{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent);}
+  .hero h2{font-size:28px; line-height:1.05;}
+  .hero .meta{color:var(--muted); font-size:14px;}
+  .hero-rest{border-left-color:var(--muted);}
+  .btn{
+    border:none; border-radius:12px; padding:13px 18px; font-weight:700; font-size:15px;
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .btn-primary{background:var(--accent); color:var(--accent-ink);}
+  .btn-primary:active{filter:brightness(0.94);}
+  .btn-secondary{background:var(--surface-2); color:var(--text);}
+  .btn-ghost{background:transparent; color:var(--muted); border:1px solid var(--border);}
+  .btn-block{width:100%;}
+  .btn-rest{background:var(--rest); color:var(--rest-ink);}
+
+  .section-label{
+    font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);
+    padding-block:4px 2px;
+  }
+
+  .chip-row{display:grid; grid-template-columns:repeat(5,1fr); gap:8px;}
+  .chip{
+    background:var(--surface); border:1px solid var(--border); border-radius:12px;
+    padding:9px 4px 8px; text-align:center; display:flex; flex-direction:column; gap:4px;
+    font-size:11px; color:var(--muted);
+  }
+  .chip .d{font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--text);}
+  .chip.today{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset;}
+  .chip.today .d{color:var(--accent);}
+  .chip.next-week{opacity:0.8;}
+
+  .exlist{display:flex; flex-direction:column; border:1px solid var(--border); border-radius:16px; overflow:hidden; background:var(--surface);}
+  .exrow{
+    display:flex; align-items:center; gap:12px; padding:12px 14px;
+    border-bottom:1px solid var(--border);
+  }
+  .exrow:last-child{border-bottom:none;}
+  .exrow-icon{
+    width:44px; height:44px; border-radius:10px; background:var(--surface-2); flex:none;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .exrow-icon svg{width:38px; height:38px;}
+  .exrow-body{flex:1; min-width:0;}
+  .exrow-name{font-weight:700; font-size:15px;}
+  .exrow-sub{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .badge-knee{
+    display:inline-flex; align-items:center; gap:3px; font-size:10.5px; font-weight:700;
+    color:var(--ok); background:var(--ok-soft); border-radius:6px; padding:2px 6px; margin-top:3px;
+  }
+
+  .infobar{
+    display:flex; gap:10px; align-items:flex-start; font-size:13px; color:var(--muted);
+    background:var(--surface-2); border-radius:12px; padding:12px 14px;
+  }
+
+  /* ---------- day view ---------- */
+  .backrow{display:flex; align-items:center; gap:10px; padding-block:0 12px;}
+  .backbtn{
+    background:none; border:none; color:var(--text); font-size:20px; padding:4px 6px 4px 0;
+  }
+
+  /* ---------- modal (exercise preview) ---------- */
+  .overlay{
+    position:fixed; inset:0; background:rgba(10,10,8,0.5); display:flex; align-items:flex-end;
+    z-index:20;
+  }
+  .sheet{
+    background:var(--surface); width:100%; max-width:480px; margin:0 auto; border-radius:20px 20px 0 0;
+    padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:12px;
+    max-height:88vh; overflow-y:auto;
+  }
+  .sheet-illus{display:flex; justify-content:center; padding:6px 0 2px;}
+  .sheet-illus svg{width:170px; height:162px;}
+  .sheet h3{font-size:22px;}
+  .cue{font-size:14.5px; line-height:1.5; color:var(--text);}
+  .closebar{display:flex; justify-content:flex-end;}
+
+  /* ---------- session view ---------- */
+  .session{display:flex; flex-direction:column; gap:16px; flex:1;}
+  .session-top{display:flex; justify-content:space-between; align-items:center;}
+  .progress-text{font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;}
+  .exit-btn{background:none; border:none; color:var(--muted); font-size:22px; line-height:1; padding:2px 6px;}
+
+  .stage{
+    background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    padding:22px 16px 20px; box-shadow:var(--shadow);
+  }
+  .stage-illus{width:100%; max-width:280px; aspect-ratio:200/190; }
+  .stage-illus svg{width:100%; height:100%; display:block;}
+  .stage-name{font-size:26px; text-align:center;}
+  .stage-target{font-family:var(--font-display); font-weight:700; font-size:34px; color:var(--accent); font-variant-numeric:tabular-nums;}
+  .stage-cue{font-size:14px; color:var(--muted); text-align:center; line-height:1.45; padding:0 6px;}
+
+  .rest-stage{
+    background:var(--rest); color:var(--rest-ink); border-radius:20px; padding:34px 20px;
+    display:flex; flex-direction:column; align-items:center; gap:10px; box-shadow:var(--shadow);
+  }
+  .rest-label{font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; opacity:0.85;}
+  .rest-num{font-family:var(--font-display); font-size:76px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1;}
+  .rest-next{font-size:14px; opacity:0.9; text-align:center;}
+  .rest-controls{display:flex; gap:10px; margin-top:6px;}
+  .rest-controls button{background:rgba(255,255,255,0.18); color:var(--rest-ink); border:1px solid rgba(255,255,255,0.35); border-radius:10px; padding:8px 14px; font-weight:700; font-size:13px;}
+
+  .setdots{display:flex; gap:6px; justify-content:center;}
+  .setdot{width:8px; height:8px; border-radius:50%; background:var(--border);}
+  .setdot.done{background:var(--ok);}
+  .setdot.active{background:var(--accent);}
+
+  .done-wrap{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; text-align:center; padding:24px 6px;}
+  .done-emoji{font-family:var(--font-display); font-weight:700; font-size:60px; color:var(--accent);}
+
+  .limb{stroke:var(--accent); stroke-width:7; stroke-linecap:round;}
+  .headc{fill:var(--accent);}
+  .groundline{stroke:var(--border); stroke-width:2;}
+  .diagram-bg{fill:var(--surface-2);}
+  .limb{stroke-width:8;}
+  .far{stroke:var(--rest);}
+  .torso{stroke:var(--text);stroke-width:12;stroke-linecap:round;fill:none;}
+  .neck{stroke:var(--text);stroke-width:6;stroke-linecap:round;}
+  .headc{fill:var(--text);}
+  .joint{fill:var(--surface);}
+  .foot{stroke:var(--accent);stroke-width:5;stroke-linecap:round;}
+  .foot.far{stroke:var(--rest);}
+  .equipment{stroke:var(--muted);stroke-width:4;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .bell{stroke:var(--text);stroke-width:3;fill:var(--muted);}
+  .motion-arrow{stroke:var(--rest);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .focus-ring{stroke:var(--accent);stroke-width:1.5;fill:none;stroke-dasharray:3 2;}
+  .focus-label{fill:var(--accent);}
+  .focus-number{fill:var(--accent-ink);font:bold 8px Arial,sans-serif;}
+  .movement-guide{width:100%;}
+  .phase-strip{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px;}
+  .phase-card{margin:0;padding:8px;background:var(--surface-2);border-radius:12px;}
+  .phase-card svg{display:block;width:100%;height:auto;}
+  .phase-card figcaption{font-size:12px;font-weight:700;line-height:1.4;min-height:34px;}
+  .phase-index{color:var(--accent);}
+  .phase-tip{font-size:12px;line-height:1.4;}
+  .phase-tip b{color:var(--accent);}
+  .figure-key{font-size:10.5px;color:var(--muted);line-height:1.5;margin-top:8px;}
+  .motion-toggle{font-size:12px;padding:8px 12px;margin-top:10px;}
+  .motion-panel{max-width:210px;margin:8px auto 0;}
+  .motion-panel svg{width:100%;height:auto;}
+  .coaching{font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:10px;}
+  .coaching strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px;}
+  .stage .movement-guide{text-align:left;}
+  .stage-name{font-size:24px;}
+  .form-details{width:100%;margin-top:8px;text-align:left;}
+  .form-details summary{font-size:13px;font-weight:700;cursor:pointer;padding:8px 0;}
+  .form-details .coaching{margin-top:8px;}
+  .warmup-card{border-left-color:var(--rest);}
+  .warmup-card .eyebrow{color:var(--rest);}
+  .warmup-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .warmup-actions .btn{flex:1;font-size:13px;}
+  .session-controls{display:flex;gap:8px;}
+  .session-controls .btn{flex:1;}
+  .phase-status{font-size:12px;color:var(--rest);font-weight:700;text-align:center;min-height:18px;}
+  button:focus-visible,summary:focus-visible{outline:3px solid var(--rest);outline-offset:3px;}
+  .exrow[role="button"]{cursor:pointer;}
+  .exrow[role="button"]:focus-visible{outline:3px solid var(--rest);outline-offset:-3px;}
+
+  @media (prefers-reduced-motion: reduce){
+    * { scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="topbar">
+    <div class="brand">Loop <span>&amp;</span> Bell</div>
+    <div class="topbar-right">
+      <button class="icon-btn" id="soundBtn" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+      <button class="icon-btn" id="infoBtn" title="About &amp; safety" aria-label="About and safety">i</button>
+    </div>
+  </div>
+
+  <div id="view-home" class="stack"></div>
+  <div id="view-day" class="stack hidden"></div>
+  <div id="view-session" class="session hidden"></div>
+  <div id="view-done" class="done-wrap hidden"></div>
+</div>
+
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     1. POSE LIBRARY — side-view stick-figure keyframes
+     Each pose: h(head x,y,r) s(shoulder) e(elbow) a(hand) p(hip) k(knee) f(foot)
+  ============================================================ */
+  /* Each keyframe has two arms and two legs. Teal marks the far limb;
+     numbered markers match the form notes below each phase diagram. */
+  function P(h,s,e,a,p,k,f,other){
+    var pose = {h:h,s:s,e:e,a:a,p:p,k:k,f:f};
+    pose.e2 = other && other.e || [e[0]+5,e[1]];
+    pose.a2 = other && other.a || [a[0]+5,a[1]];
+    pose.k2 = other && other.k || [k[0]+5,k[1]];
+    pose.f2 = other && other.f || [f[0]+5,f[1]];
+    return pose;
+  }
+  function pose(base, changes){ return Object.assign({},base,changes); }
+  var stand = P([100,49,9],[100,65],[110,90],[111,114],[100,113],[92,145],[90,174],{k:[110,145],f:[116,174]});
+  var hinge = P([61,76,9],[76,86],[78,111],[79,140],[123,105],[111,140],[105,174],{k:[125,141],f:[120,174]});
+  var quad = P([157,108,9],[138,117],[138,144],[138,174],[89,117],[87,171],[55,174],{e:[149,144],a:[149,174],k:[98,171],f:[68,174]});
+  var plank = P([157,117,9],[141,130],[143,151],[146,174],[92,146],[65,159],[35,174],{e:[154,151],a:[158,174],k:[71,159],f:[43,174]});
+  var foreplank = pose(plank,{e:[141,172],a:[169,174],e2:[149,172],a2:[178,174]});
+  var back = P([166,165,9],[147,167],[126,173],[104,174],[96,169],[64,134],[45,174],{k:[76,136],f:[60,174]});
+  var bridge = pose(back,{p:[97,146],k:[62,131],k2:[74,131]});
+  var side = P([165,151,9],[145,157],[151,173],[176,174],[99,165],[68,169],[35,174],{k:[69,159],f:[35,161]});
+  var sideplank = P([164,105,9],[147,122],[149,172],[177,174],[99,141],[67,157],[35,174],{e:[133,145],a:[114,147],k:[70,151],f:[38,167]});
+  var prone = P([157,165,9],[137,169],[160,172],[183,174],[92,168],[63,171],[34,174]);
+  var seated = P([103,85,9],[102,103],[119,118],[131,137],[108,140],[68,147],[45,174]);
+  var diptop = P([96,61,9],[97,79],[122,104],[143,126],[105,126],[70,141],[47,174]);
+  var hang = P([102,57,9],[100,73],[85,43],[83,19],[102,119],[99,148],[97,174],{e:[116,43],a:[119,19],k:[113,148],f:[111,174]});
+  var walkA = pose(stand,{e:[80,87],a:[68,106],e2:[124,84],a2:[131,66],k:[119,141],f:[141,174],k2:[87,144],f2:[66,173]});
+  var walkB = pose(stand,{e:walkA.e2,a:walkA.a2,e2:walkA.e,a2:walkA.a,k:walkA.k2,f:walkA.f2,k2:walkA.k,f2:walkA.f});
+  var deadbug = pose(back,{e:[145,138],a:[145,109],e2:[155,138],a2:[155,109],k:[96,131],f:[64,131],k2:[105,123],f2:[72,123]});
+  var POSES = {
+    PUSHUP:[plank,pose(plank,{h:[158,145,9],s:[142,158],p:[93,163],k:[65,168],e:[121,169],e2:[132,170]})],
+    ROW:[hinge,pose(hinge,{e:[105,77],a:[116,103]})],
+    PULLUP:[pose(hang,{a:[83,30],a2:[119,30]}),pose(hang,{h:[102,16,9],s:[100,33],e:[72,50],e2:[128,50],a:[83,30],a2:[119,30],p:[103,81],k:[98,113],k2:[116,113],f:[92,143],f2:[116,143]})],
+    DIP:[diptop,pose(diptop,{h:[96,90,9],s:[97,108],e:[123,135],e2:[128,135],p:[105,150],k:[70,152],k2:[75,152]})],
+    PLANK:[foreplank,foreplank],
+    PRESS:[pose(stand,{e:[123,80],a:[117,57]}),pose(stand,{e:[104,42],a:[103,18]})],
+    DEADLIFT:[stand,hinge],
+    HIPTHRUST:[back,bridge],
+    CALFRAISE:[stand,pose(stand,{h:[100,42,9],s:[100,58],p:[100,106],k:[92,138],k2:[110,138],f:[90,166],f2:[116,166]})],
+    SIDERAISE:[side,pose(side,{k2:[70,134],f2:[42,111]})],
+    DONKEYKICK:[quad,pose(quad,{k2:[47,116],f2:[48,76]})],
+    BIRDDOG:[quad,pose(quad,{e:[162,117],a:[188,117],k2:[56,117],f2:[24,117]})],
+    TREADMILL:[walkA,walkB],
+    DEADBUG:[deadbug,pose(deadbug,{e:[169,164],a:[190,171],k2:[65,158],f2:[32,165]}),pose(deadbug,{e2:[170,154],a2:[191,158],k:[64,152],f:[30,158]})],
+    TWIST:[pose(seated,{e:[119,122],a:[137,135],e2:[116,129],a2:[137,135]}),pose(seated,{e:[85,120],a:[67,132],e2:[92,128],a2:[67,132]})],
+    SIDEPLANK:[sideplank,sideplank],
+    SUPERMAN:[prone,pose(prone,{h:[158,156,9],s:[137,159],e:[160,153],a:[183,150],k:[63,160],f:[34,153],k2:[68,162],f2:[39,155]})],
+    SWING:[pose(hinge,{e:[93,109],a:[110,137],e2:[94,108],a2:[110,137]}),pose(stand,{e:[128,65],a:[158,65],e2:[129,65],a2:[158,65]})],
+    FLOORPRESS:[pose(back,{e:[148,174],a:[146,143]}),pose(back,{e:[146,139],a:[146,109]})],
+    RENEGADEROW:[pose(plank,{e:[143,142],a:[146,154]}),pose(plank,{e:[119,119],a:[120,144]})],
+    HALO:[pose(stand,{e:[122,75],a:[125,44],e2:[115,83],a2:[125,44]}),pose(stand,{e:[76,53],a:[76,36],e2:[121,51],a2:[76,36]}),pose(stand,{e:[77,74],a:[76,44],e2:[86,81],a2:[76,44]})],
+    MOBILITY:[pose(quad,{h:[155,128,9],curve:[111,98]}),pose(quad,{h:[163,102,9],curve:[113,134]})],
+    MOUNTAINCLIMBER:[plank,pose(plank,{k2:[117,153],f2:[91,172]}),pose(plank,{k:[118,149],f:[91,169]})],
+    BOXSQUAT:[pose(stand,{e:[120,86],a:[142,92]}),P([100,92,9],[101,108],[124,111],[148,110],[110,142],[145,142],[142,174],{k:[133,142],f:[131,174]})],
+    SHOULDERTAP:[plank,pose(plank,{e:[123,146],a:[147,130]}),pose(plank,{e2:[130,151],a2:[142,130]})],
+    REACHUNDER:[pose(sideplank,{e2:[146,95],a2:[146,68]}),pose(sideplank,{e2:[130,147],a2:[111,158]})],
+    GLUTEMARCH:[bridge,pose(bridge,{k2:[79,126],f2:[60,158]}),pose(bridge,{k:[69,125],f:[45,158]})],
+    CLAMSHELL:[pose(side,{k:[69,153],f:[82,174],k2:[71,146],f2:[82,174]}),pose(side,{k:[69,153],f:[82,174],k2:[77,119],f2:[82,174]})],
+    CALFRAISESL:[pose(stand,{k2:[123,141],f2:[132,124]}),pose(stand,{h:[100,42,9],s:[100,58],p:[100,106],k:[92,138],f:[90,166],k2:[123,134],f2:[132,117]})],
+    TREADMILLINT:[walkA,walkB],
+    SUPERMANPULSE:[prone,pose(prone,{h:[158,157,9],s:[137,160],e:[160,155],a:[183,152],k:[63,161],f:[34,154],k2:[68,163],f2:[39,156]})],
+    MARCH:[pose(walkA,{k:[115,121],f:[115,151]}),pose(walkB,{k2:[115,121],f2:[115,151]})],
+    STEPTOUCH:[pose(stand,{k:[80,145],f:[65,174],k2:[121,145],f2:[139,174]}),pose(stand,{k:[102,145],f:[101,174],k2:[116,145],f2:[122,174]})],
+    HEELDIG:[pose(stand,{k:[73,147],f:[55,170]}),pose(stand,{k2:[132,147],f2:[149,170]})],
+    SHOULDERROLL:[stand,pose(stand,{s:[100,57],e:[110,83],e2:[115,83]}),pose(stand,{s:[97,64],e:[105,90],e2:[110,90]})],
+    ARMREACH:[stand,pose(stand,{e:[113,40],a:[118,15]}),pose(stand,{e2:[87,40],a2:[82,15]})],
+    ANKLEROCK:[stand,pose(stand,{h:[105,49,9],s:[105,65],p:[105,113],k:[103,146],k2:[121,146]})],
+    HIPHINGE:[pose(stand,{e:[110,94],a:[100,113]}),pose(hinge,{e:[107,95],a:[123,105]})],
+    SIDEREACH:[pose(stand,{e:[106,38],a:[108,16]}),pose(stand,{h:[83,52,9],s:[83,67],e:[78,40],a:[68,20],e2:[95,95],a2:[98,117]})],
+    CHESTOPENER:[pose(stand,{e:[125,80],a:[143,58],e2:[75,80],a2:[57,58]}),pose(stand,{e:[126,67],a:[145,46],e2:[74,67],a2:[55,46]})],
+    CALFSTRETCH:[P([113,53,9],[115,69],[146,83],[179,83],[106,114],[79,140],[52,174],{k:[132,144],f:[139,174]}),P([122,53,9],[124,69],[150,83],[179,83],[116,114],[83,143],[52,174],{k:[144,141],f:[139,174]})],
+    HAMSTRING:[pose(stand,{k:[75,146],f:[57,172]}),P([87,68,9],[94,85],[84,112],[70,135],[116,109],[79,142],[57,172],{k:[127,145],f:[131,174]})],
+    HIPFLEXOR:[P([100,49,9],[100,65],[112,91],[101,112],[100,113],[72,144],[48,174],{k:[121,141],f:[140,174]}),P([111,49,9],[111,65],[123,91],[112,112],[111,113],[80,144],[48,174],{k:[136,141],f:[140,174]})]
+  };
+
+  // phases: [label, execution note, joint to highlight].
+  function E(name,illus,cue,setup,move,breathe,avoid,easier,phases,knee){
+    return {name:name,illus:illus,cue:cue,setup:setup,move:move,breathe:breathe,avoid:avoid,easier:easier,phases:phases,knee:!!knee};
+  }
+  var EX = {
+    pushup:E("Push-Up","PUSHUP","Brace your trunk; lower and lift your body as one unit.","Place hands just wider than shoulders, fingers spread; extend legs and look at the floor.","Lower your chest between your hands with elbows about 30–45° from your torso. Press the floor away; stop before your hips sag.","Inhale down; exhale as you push up.","Flared elbows, dropped hips, or reaching your chin forward.","Use a wall or a stable raised surface. Keep hands only slightly wider for the wide-hand variation; elevate feet only while maintaining control.",[["High plank","Head, hips and heels aligned","p"],["Lower → press","Elbows angle back; body moves together","e"]]),
+    row:E("Kettlebell Row","ROW","Pull toward your hip while keeping your torso still.","Hinge with soft knees; support the free hand on a sturdy surface or your thigh. Let the bell hang beneath the shoulder.","Draw your elbow toward your back pocket. Pause, then lower slowly to an extended arm. Complete both sides.","Exhale pulling; inhale lowering.","Twisting the trunk, shrugging, or rounding your back.","Practice the row unweighted or use a lighter load.",[["Hinge & hang","Long spine; hips back","p"],["Row → lower","Elbow close to the ribs","e"]]),
+    pullup:E("Pull-Up","PULLUP","Pull without swinging; lower with control.","Use a secure bar and an overhand grip around shoulder-width. Begin with arms extended in a comfortable hang.","Engage the shoulders, pull elbows down until your chin clears the bar without craning, then lower smoothly. End the set when form breaks.","Exhale up; inhale down.","Kipping, chin jutting, or dropping into the bottom position.","Use foot assistance from a stable step, or step to the top for controlled negatives if you can lower safely.",[["Controlled hang","Grip secure; shoulders engaged","a"],["Pull → lower","Chin clears bar without craning","h"]]),
+    press:E("Kettlebell Overhead Press","PRESS","Stack the bell over your shoulder; keep ribs over hips.","Stand hip-width, brace gently, and rack the bell at shoulder height with a straight wrist.","Press overhead until the arm is straight in a comfortable range. Keep the bell balanced over your shoulder; lower to the rack. Repeat both sides.","Exhale pressing; inhale lowering.","Leaning back, rib flare, or a bent wrist.","Use a lighter load or rehearse without weight; 12 kg is not a required starting weight.",[["Rack","Wrist straight; ribs down","a"],["Press → rack","Arm stacks over shoulder","s"]]),
+    dip:E("Bench Dip","DIP","Stay close to the bench and use a shallow, comfortable range.","Use an immovable bench with hands beside the hips. Start with bent knees and feet flat; keep shoulders down.","Bend elbows backward to lower a short distance, at most until upper arms approach parallel to the floor. Press up without forcing the shoulders back.","Inhale down; exhale up.","Deep shoulder extension, shrugged shoulders, or a sliding bench.","Bend knees and shorten the range. Substitute a close-hand wall push-up if the position irritates your shoulders.",[["Support","Stable bench; shoulders down","s"],["Lower → press","Short range; elbows bend back","e"]]),
+    plank:E("Plank Hold","PLANK","Keep a straight trunk and breathe throughout the hold.","Place forearms on the floor with elbows under shoulders. Extend legs and press through your toes.","Brace your abdomen and glutes; keep head, shoulders, hips and heels aligned. Hold only while you can maintain that position.","Take steady breaths; do not hold your breath.","Sagging hips, raised hips, or neck extension.","Put knees down or use an elevated hand plank on a sturdy surface.",[["Set alignment","Elbows under shoulders","e"],["Hold & breathe","Ribs and pelvis stay aligned","p"]]),
+    deadlift:E("Kettlebell Romanian Deadlift","DEADLIFT","Hinge your hips back; keep the bell close and your spine long.","Stand hip-width with a two-handed grip, straight arms and soft knees. Start upright.","Push hips back with only a slight knee bend. Lower until you feel hamstring tension while keeping the back position. Push through your feet to stand tall.","Inhale hinging; exhale standing.","Rounding the back, squatting the weight down, or leaning back at the top.","Practice an unweighted hinge toward a wall behind you. The bell does not need to reach the floor.",[["Stand tall","Bell close; knees soft","k"],["Hinge → stand","Hips back; spine stays long","p"]],true),
+    hipthrust:E("Glute Bridge / Hip Thrust","HIPTHRUST","Lift from your glutes, keeping ribs down.","For the illustrated floor bridge, lie on your back with feet hip-width and knees bent. For a hip thrust, support the upper back on a stable padded couch edge.","Press through your whole feet and lift until shoulders, hips and knees line up. Pause briefly, then lower. Keep the neck relaxed.","Exhale lifting; inhale lowering.","Arching your lower back, pushing through toes only, or lifting beyond trunk alignment.","Use the floor bridge without weight; adjust foot position until comfortable.",[["Floor setup","Feet flat; knees track over feet","f"],["Lift → lower","Glutes lift hips; ribs down","p"]],true),
+    calfraise:E("Standing Calf Raise","CALFRAISE","Rise vertically; lower your heels slowly.","Stand hip-width beside a wall or sturdy chair for balance. Begin unweighted; if loaded, hold the single bell in one hand.","Press through the balls of both feet, lift heels, pause, and lower to the floor under control.","Exhale rising; inhale lowering.","Bouncing, rolling ankles outward, or rushing the descent.","Use hand support and a smaller range; add weight only with reliable balance.",[["Heels down","Weight spread across forefoot","f"],["Rise → lower","Heels lift; ankles stay aligned","k"]],true),
+    sideraise:E("Side-Lying Leg Raise","SIDERAISE","Keep hips stacked; lift the top leg without rolling back.","Lie on your side with head supported. Keep the lower leg comfortable and the upper leg long, toes facing forward.","Lift the top leg a modest distance while keeping your pelvis still, then lower slowly. Complete both sides.","Exhale lifting; inhale lowering.","Turning toes up, swinging, or rolling your pelvis backward.","Bend the lower knee for balance and reduce the lift height.",[["Stack hips","Pelvis faces forward","p"],["Lift → lower","Top leg moves; trunk stays still","k2"]],true),
+    donkeykick:E("Donkey Kick","DONKEYKICK","Lift a bent leg from the hip without arching your back.","Start on hands and knees, hands under shoulders and knees under hips. Pad your knees if needed.","Keep one knee bent about 90° and lift the thigh only until it is near torso level. Lower without shifting your weight; complete both sides.","Exhale lifting; inhale lowering.","Overlifting, twisting your hips, or swinging the leg.","Make the lift smaller; use standing hip extensions if kneeling is uncomfortable.",[["Hands & knees","Brace; hips stay level","p"],["Lift → return","Bent knee; no back arch","k2"]],true),
+    birddog:E("Bird-Dog","BIRDDOG","Reach opposite arm and leg long, keeping your hips level.","Start on hands and knees with wrists under shoulders, knees under hips and a neutral neck.","Extend one arm and the opposite leg to roughly torso height. Pause, return slowly, then switch. Reach outward rather than upward.","Exhale reaching; inhale returning; breathe during pauses.","Low-back arching, hip rotation, or lifting the head.","Move only one limb at a time or slide a foot along the floor.",[["Brace","Hands under shoulders; knees under hips","s"],["Reach → switch","Opposite arm and leg; pelvis still","p"]],true),
+    treadmill:E("Treadmill Walk","TREADMILL","Walk tall at a pace that lets you talk comfortably.","Attach the safety clip, start at low speed and use rails only when getting on or off.","Take natural steps with relaxed arm swings. Increase speed or incline gradually only if comfortable; include an easy start and finish in the block.","Breathe steadily; use the talk test to judge effort.","Overstriding, hanging on the rails, or assuming incline always feels better on your knees.","Use a flat, slower walk or walk on the spot without a treadmill.",[["Step","Short natural stride","f"],["Switch feet","Upright trunk; relaxed arms","s"]],true),
+    deadbug:E("Dead Bug","DEADBUG","Lower opposite arm and leg only as far as your back stays still.","Lie on your back, arms above shoulders, hips and knees about 90°. Gently brace and keep ribs down.","Reach one arm behind you and the opposite leg forward. Stop before the low back arches, return, and switch sides.","Exhale extending; inhale returning.","Arching the back, rushing, or reaching farther than you can control.","Keep arms still and alternate bent-knee heel taps.",[["Tabletop","Ribs down; knees over hips","p"],["Reach one side","Opposite arm and leg; back still","a"],["Switch sides","Return first, then alternate","k"]]),
+    twist:E("Russian Twist","TWIST","Use a small controlled torso turn with feet supported.","Sit with knees bent and feet flat, lengthen your spine, and lean back only slightly. Begin without weight.","Turn your rib cage gently to one side, return through center, then turn the other way. Keep the pelvis quiet and hands near the chest.","Exhale turning; inhale through center.","Rounding the back, throwing the arms, or forcing end-range rotation.","Sit more upright and shorten the turn; keep both feet down.",[["Turn one side","Long spine; feet grounded","s"],["Center → other side","Small turn; pelvis stays quiet","p"]]),
+    sideplank:E("Side Plank","SIDEPLANK","Support yourself through the forearm; lift your hips into line.","Lie on your side, elbow directly under shoulder, legs extended and feet stacked or staggered.","Press into the forearm and lift until head, hips and feet align. Hold while breathing. Each timed set includes a separate left and right hold.","Breathe steadily through the hold.","Collapsing into the shoulder, dropping hips, or holding your breath.","Bend both knees and support from the forearm and lower knee.",[["Support","Elbow directly under shoulder","e"],["Hold & breathe","Hips lifted; body aligned","p"]]),
+    superman:E("Superman Hold","SUPERMAN","Lift a little; keep the back of your neck long.","Lie face down with arms reaching forward and legs long. Look toward the floor.","Gently lift arms, upper chest and legs a few centimeters. Keep the movement small and lower if you cannot breathe comfortably.","Breathe throughout the hold.","Throwing the head back, lifting high, or compressing the low back.","Keep legs down, lift one limb at a time, or use bird-dog.",[["Lie prone","Neck long; gaze down","h"],["Small lift & hold","Low lift; no forced arch","p"]]),
+    swing:E("Kettlebell Swing","SWING","Drive with your hips; let the bell float with relaxed arms.","Clear the space. Stand a little wider than hips; hinge to grip the bell securely with both hands and hike it back between your thighs.","Drive your hips forward to stand tall and let the bell float no higher than chest level. As it falls, hinge back. Park the bell under control to finish.","Exhale on the hip drive; inhale on the backswing.","Squatting the swing, lifting with shoulders, leaning back, or letting the bell pull your back round.","Master the unweighted hinge and controlled deadlift before swinging; use a load you can handle.",[["Backswing","Hips back; bell high between thighs","p"],["Drive → hinge","Stand tall; arms guide the bell","s"]],true),
+    floorpress:E("Kettlebell Floor Press","FLOORPRESS","Press over the shoulder with a straight wrist.","Lie on your back, knees bent and feet flat. Use both hands to position the bell safely in one hand, then support it at the shoulder.","Keep the upper arm about 30–45° from your torso. Press until the arm is straight; lower until the upper arm touches the floor gently. Complete the listed reps on each side.","Exhale pressing; inhale lowering.","Bent wrist, flared elbow, or dropping the bell toward your face.","Use a lighter load or rehearse without weight; use both hands to put the bell down safely.",[["Floor support","Upper arm rests gently; wrist straight","e"],["Press → lower","Bell stacks over shoulder","a"]]),
+    renegaderow:E("Kettlebell Renegade Row","RENEGADEROW","Row one bell with the other hand planted on the floor.","Use a wide-foot high plank with the bell beside one hand. With one kettlebell, keep the supporting palm on the floor, not balanced on a bell.","Brace, pull the bell toward the hip without rotating, and lower it gently. Complete one side, reposition safely, then repeat on the other.","Exhale rowing; inhale lowering.","Twisting the pelvis, shifting abruptly, or balancing on an unstable handle.","Put knees down or use a supported standing row.",[["Wide-foot plank","Supporting palm flat on floor","a2"],["Row → lower","Hips square; elbow tracks back","p"]]),
+    halo:E("Kettlebell Halo","HALO","Circle a light bell close to your head while keeping your trunk still.","Stand tall, brace gently, and hold the bell securely by the horns at upper-chest level.","Guide it around one side of the head, behind it, and around the other side back to the chest. Complete the prescribed reps in each direction.","Breathe continuously through each circle.","Moving the head to dodge the bell, arching the back, or forcing shoulder range.","Use a lighter object or rehearse the circle empty-handed; 12 kg may be too heavy for this movement.",[["Around one side","Trunk still; grip secure","a"],["Behind head","Close path; comfortable shoulders","e"],["Other side → front","Complete circle; reverse direction","a"]]),
+    mobility:E("Cat–Cow","MOBILITY","Move gently with your breath; make one smooth round trip.","Start on hands and knees, wrists under shoulders and knees under hips. Use padding under knees if needed.","Exhale and round your back gently. Inhale and soften into a small arch, opening the chest. One round trip is one cycle; keep elbows mostly straight.","Exhale rounding; inhale opening.","Forcing the neck, dropping deeply into the low back, or rushing.","Use a small range; try seated spinal tilts with hands on thighs if kneeling is uncomfortable.",[["Cat · exhale","Round gently through the spine","s"],["Cow · inhale","Open chest without forcing neck","p"]]),
+    mountainclimber:E("Mountain Climber","MOUNTAINCLIMBER","Alternate slow knee drives while your shoulders stay over your hands.","Start in a high plank with palms under shoulders, trunk braced and head neutral.","Draw one knee toward your chest only as far as the hips stay controlled. Return the foot, then switch; each knee drive is one rep.","Exhale on each knee drive; breathe between reps.","Bouncing, hiking the hips, or landing heavily.","Place hands on a stable raised surface and shorten the knee drive.",[["High plank","Shoulders over wrists","s"],["One knee in","Hips steady; controlled step","k2"],["Return → switch","Alternate without bouncing","k"]],true),
+    boxsquat:E("Box Squat","BOXSQUAT","Touch down softly, then push through your whole feet to stand.","Place a sturdy chair against a wall. Stand in front with feet around hip-width, toes slightly outward if comfortable.","Sit hips back while bending knees in line with toes. Touch the seat without dropping or rocking, then stand. Choose a seat height that feels comfortable.","Inhale sitting; exhale standing.","Knees collapsing inward, dropping onto the chair, or forcing depth.","Use a higher seat and hand support; start without the bell.",[["Stand","Stable chair behind you","f"],["Sit → stand","Knees track toes; touch softly","k"]],true),
+    shouldertap:E("Plank Shoulder Taps","SHOULDERTAP","Tap slowly while keeping your hips square.","Start in a high plank with feet wider than hips and palms under shoulders.","Shift weight gently into one hand, tap the opposite shoulder, replace the hand, and switch. Each tap is one rep.","Exhale tapping; inhale as the hand returns.","Rocking the pelvis, sagging, or rushing alternating taps.","Use an elevated surface or put knees down.",[["Brace","Wide feet; hips level","p"],["Tap","Supporting arm stays straight","a"],["Replace → switch","Return hand before switching","a2"]]),
+    reachunder:E("Side Plank Reach-Under","REACHUNDER","Rotate gently from your upper trunk while keeping your support stable.","Set a side plank with elbow under shoulder. Lift the top arm toward the ceiling.","Reach the top arm beneath your ribs with a small torso turn, then reopen toward the ceiling. Keep hips lifted; complete both sides.","Exhale reaching under; inhale opening.","Collapsing the support shoulder, dropping hips, or forcing the twist.","Support from bent knees and shorten the reach.",[["Open","Support elbow under shoulder","e"],["Reach under → open","Small turn; hips stay lifted","a2"]]),
+    glutemarch:E("Glute Bridge March","GLUTEMARCH","Keep your pelvis level while alternately lifting a foot.","Set a floor bridge with feet hip-width, ribs down, and hips lifted to a comfortable line.","Lift one foot a little with its knee bent, replace it, then switch. Maintain the bridge without tilting or arching; each lift is one rep.","Exhale lifting; inhale replacing the foot.","Hip drop, twisting, or pulling the knee so far that the bridge collapses.","Shift weight without lifting, or do a standard floor bridge.",[["Bridge","Glutes engaged; ribs down","p"],["Lift one foot","Pelvis level; small march","k2"],["Replace → switch","Keep bridge height steady","k"]],true),
+    clamshell:E("Clamshell","CLAMSHELL","Open the top knee while keeping feet together and hips stacked.","Lie on your side with head supported, hips and knees comfortably bent and feet together.","Rotate the top thigh to open the knee a short distance without rolling your pelvis. Lower slowly and complete both sides.","Exhale opening; inhale closing.","Rolling backward, separating the feet, or forcing a wide opening.","Use a smaller opening and no resistance band.",[["Stack","Bent knees; feet together","p"],["Open → close","Top knee moves; pelvis stays still","k2"]],true),
+    calfraisesl:E("Single-Leg Calf Raise","CALFRAISESL","Use support; lift and lower one heel with control.","Hold a sturdy chair or wall. Stand on one foot with the other lifted comfortably; begin without weight.","Rise through the ball of the supporting foot, pause, and lower slowly. Keep the ankle aligned; complete both sides.","Exhale rising; inhale lowering.","Ankle rolling, bouncing, or losing balance with a heavy bell.","Use both feet to rise, then lower on one if comfortable, or use two-legged raises.",[["One-foot support","Use a wall or chair for balance","f"],["Rise → lower","Supporting ankle stays aligned","k"]],true),
+    treadmillint:E("Treadmill Intervals","TREADMILLINT","Alternate easy and brisk walking; keep every interval controlled.","Attach the safety clip and start easy. Use a speed and incline that feel comfortable for your knees.","Use the first and last 2 minutes for easy walking. In between, alternate 1 minute brisk and 1 minute easy. A mild incline is optional, not a requirement.","Keep breathing steadily; slow down if you cannot speak a short sentence.","Abrupt speed jumps, gripping rails throughout, or forcing incline.","Use flat intervals at a lower speed or walk on the spot.",[["Easy walk","Natural steps; easy start and finish","f"],["Brisk / easy","Change pace gradually","s"]],true),
+    supermanpulse:E("Superman Pulse","SUPERMANPULSE","Make small, slow lifts with a long neck.","Lie face down with arms reaching forward, legs long, and eyes toward the floor.","Lift arms, upper chest and legs slightly, pause briefly, and lower under control. Each small lift is one rep.","Exhale lifting; inhale lowering.","Fast bouncing, excessive arching, or throwing the head back.","Keep legs down or substitute bird-dog.",[["Lie prone","Relax neck; gaze down","h"],["Lift → lower","Small controlled pulse","p"]])
+  };
+
+  // Standing, equipment-free options for a morning or desk break.
+  Object.assign(EX,{
+    march:E("Easy March","MARCH","Start easy and gradually swing your arms more.","Stand tall with room to step and a chair nearby for balance if needed.","Alternate small steps on the spot; lift knees only comfortably. Keep a relaxed rhythm for the interval.","Breathe naturally; you should be able to talk.","Stomping, high forced knee lifts, or holding your breath.","March seated or keep steps very small.",[["Step one foot","Quiet landing; relaxed shoulders","f"],["Switch & repeat","Gentle rhythm; stay tall","s"]]),
+    steptouch:E("Side Step & Touch","STEPTOUCH","Step sideways and bring the other foot in gently.","Stand with soft knees and clear space to each side.","Step to one side, touch the other foot beside it, then repeat in the opposite direction. Let arms swing naturally.","Breathe steadily at an easy talking pace.","Crossing feet, jumping, or twisting on a planted knee.","Use shorter steps and chair support.",[["Step out","Soft knees; weight shifts gently","k"],["Touch → reverse","Quiet step; no jump","f2"]]),
+    heeldig:E("Alternating Heel Digs","HEELDIG","Touch one heel forward, return, and switch.","Stand tall with feet under hips and knees soft.","Place one heel just ahead with toes lifted; bring it back and alternate. Add relaxed arm swings as you warm up.","Keep breathing easily.","Locking the supporting knee or reaching far enough to lose balance.","Use a chair for balance or do heel digs seated.",[["Heel forward","Toes lift; supporting knee soft","f"],["Return → switch","Small alternating steps","f2"]]),
+    shoulderroll:E("Shoulder Rolls","SHOULDERROLL","Trace slow shoulder circles with your neck relaxed.","Stand or sit upright with arms relaxed beside you.","Raise shoulders slightly, roll them back and down, then repeat. Reverse direction halfway through the interval.","Exhale as shoulders settle down.","Forcing a large circle, tensing the neck, or turning this into neck rolls.","Make smaller circles or gently squeeze and release shoulder blades.",[["Lift gently","Arms relaxed; neck long","s"],["Roll back","Small smooth circle","s"],["Settle → repeat","Shoulders away from ears","s"]]),
+    armreach:E("Alternating Arm Reaches","ARMREACH","Reach overhead comfortably while keeping ribs down.","Stand tall, feet under hips and knees soft; begin with arms at a comfortable height.","Slowly reach one arm up, lower, and switch. The diagram shows the range; alternate arms rather than holding both overhead.","Exhale reaching; inhale lowering.","Arching your back or shrugging to force an overhead position.","Reach forward at shoulder height if overhead is uncomfortable.",[["Comfortable start","Ribs over hips","p"],["Reach → lower","Comfortable range; no back arch","a"]]),
+    anklerock:E("Standing Ankle Rocks","ANKLEROCK","Rock knees forward gently while heels stay grounded.","Stand hip-width and use a wall or sturdy chair for balance if needed.","Let both knees travel slightly forward over the toes, then return. Keep feet flat and use a small, smooth range.","Breathe steadily; keep effort easy.","Heels lifting, knees collapsing inward, or pushing through joint pain.","Reduce the range or alternate seated ankle pumps.",[["Feet flat","Heels stay grounded","f"],["Rock → return","Knees follow toes","k"]]),
+    hiphinge:E("Unweighted Hip Hinge","HIPHINGE","Repeat a small hip hinge with a long spine.","Stand hip-width, knees soft, and place hands on your hips.","Push hips back until you feel mild hamstring tension, then stand tall. Start small and increase only while comfortable.","Inhale back; exhale standing.","Rounding your back, locking knees, or leaning back on return.","Shorten the hinge and use a wall behind you as a target.",[["Stand","Soft knees; hands on hips","k"],["Hinge → stand","Hips back; long spine","p"]]),
+    sidereach:E("Gentle Side Reach","SIDEREACH","Lengthen one side, return through center, then switch.","Stand hip-width with knees soft. Raise one arm if comfortable.","Reach up and slightly sideways without turning your chest. Return upright, switch arms, and repeat slowly.","Exhale into the reach; inhale to center.","Forcing the bend or twisting the pelvis.","Keep hands at your sides and slide one hand down the thigh.",[["Reach up","Comfortable shoulder range","a"],["Side → center","Small bend; hips stay steady","p"]]),
+    chestopener:E("Gentle Chest Opener","CHESTOPENER","Open your arms gently, then relax them back in.","Stand tall with elbows bent and hands near shoulder height or lower.","Gently draw elbows out and back until you feel a mild chest stretch. Ease forward and repeat; use short comfortable pauses.","Inhale opening; exhale relaxing.","Arching your back or forcing elbows behind you.","Keep elbows lower and make a smaller opening.",[["Prepare","Ribs down; neck relaxed","p"],["Open → relax","Gentle chest stretch","e"]]),
+    calfstretch:E("Standing Calf Stretch","CALFSTRETCH","Keep the back heel down; ease into a mild stretch.","Face a wall with hands supported. Step one foot back, toes pointing forward and back leg comfortably straight.","Bend the front knee slightly and shift forward until the back calf stretches. Hold 15–20 seconds, release briefly, and repeat; switch legs at halfway.","Breathe slowly through the hold.","Bouncing, rolling the back foot outward, or forcing the stretch.","Shorten the stance and keep the stretch light.",[["Split stance","Wall support; back heel down","f"],["Ease in → release","Back calf stretches gently","k"]]),
+    hamstring:E("Standing Hamstring Stretch","HAMSTRING","Hinge a little over a heel placed forward.","Stand with support nearby. Put one heel just in front, toes lifted; keep the other knee soft.","Hinge from the hips with a long back until the front thigh feels a mild stretch. Hold 15–20 seconds, release, and repeat; switch legs at halfway.","Breathe slowly and relax the shoulders.","Rounding toward your toes, locking the knee, or bouncing.","Use a smaller hinge or do the same stretch seated on a sturdy chair.",[["Heel forward","Front knee soft; balance supported","f"],["Hinge → release","Long spine; mild stretch","p"]]),
+    hipflexor:E("Standing Hip-Flexor Stretch","HIPFLEXOR","Tuck the pelvis gently and shift forward a little.","Use a wall or chair for support and take a short split stance. Keep your chest upright.","Gently tuck your tailbone and soften the front knee until you feel a mild stretch at the front of the back hip. Hold 15–20 seconds, release, and repeat; switch legs halfway.","Breathe slowly; keep your ribs relaxed.","Arching the low back, taking a deep lunge, or forcing the front knee.","Shorten the stance and reduce the forward shift.",[["Short split stance","Upright torso; support nearby","s"],["Tuck → ease in","Small shift; no back arch","p"]])
+  });
+
+  POSES.WALLSLIDE=[pose(stand,{e:[127,80],a:[154,55],e2:[123,85],a2:[154,60]}),pose(stand,{e:[122,46],a:[154,20],e2:[118,50],a2:[154,24]})];
+  POSES.TRUNKTURN=[pose(stand,{e:[119,84],a:[130,91],e2:[105,83],a2:[130,91]}),pose(stand,{e:[82,85],a:[68,92],e2:[95,83],a2:[68,92]})];
+  POSES.HEELTOE=[pose(stand,{f:[90,166],f2:[116,166]}),stand];
+  EX.wallslide=E("Gentle Wall Slides","WALLSLIDE","Slide your arms up only as far as your shoulders feel comfortable.","Face a wall and place your hands or forearms against it at a comfortable height. Stand tall with ribs down.","Slide hands gently up the wall, then back down. Keep contact light and stop before your back arches or shoulders pinch.","Exhale up; inhale down.","Forcing an overhead range or leaning your lower back away from the wall.","Use a shorter slide or alternate comfortable forward reaches.",[["Hands on wall","Light contact; ribs down","p"],["Slide → lower","Comfortable shoulder range","a"]]);
+  EX.trunkturn=E("Standing Trunk Turns","TRUNKTURN","Turn gently side to side while keeping your hips facing forward.","Stand hip-width with soft knees and hands loosely in front of your chest.","Turn your rib cage a little to one side, return through center, and switch. Keep the pelvis quiet and the movement comfortable.","Exhale turning; inhale returning.","Forcing rotation, twisting on a planted knee, or swinging the arms.","Sit on a sturdy chair and make a smaller turn.",[["Turn one side","Small turn; hips face forward","s"],["Center → switch","No forced twist","p"]]);
+  EX.heeltoe=E("Supported Heel Raises","HEELTOE","Rise onto the balls of your feet, then lower slowly.","Stand beside a wall or sturdy chair with feet hip-width. Keep hand support available.","Lift both heels gently, pause briefly, and lower them fully. Repeat at an easy pace without weight.","Exhale rising; inhale lowering.","Bouncing, rolling ankles outward, or rushing.","Use a smaller lift with hand support, or alternate seated heel lifts.",[["Heels lift","Rise vertically; use support","f"],["Lower → repeat","Slow descent; ankles aligned","k"]]);
+  POSES.HALO=[pose(stand,{e:[123,86],a:[110,86],e2:[87,86],a2:[110,86]}),POSES.HALO[0],pose(stand,{e:[80,48],a:[100,26],e2:[120,48],a2:[100,26]}),POSES.HALO[2]];
+  EX.halo.phases=[["Front setup","Secure two-handed grip; ribs down","p"],["Around one side","Close path; head stays still","a"],["Behind head","Comfortable shoulder range","e"],["Other side → front","Complete circle; reverse direction","a"]];
+  EX.armreach.phases=[["Stand tall","Ribs over hips; shoulders relaxed","p"],["Reach one arm","Comfortable range; no back arch","a"],["Lower → switch","Alternate slow reaches","a2"]];
+  EX.armreach.move="Slowly reach one arm up, lower it, and switch arms. Keep your ribs over your hips and use a comfortable range.";
+
+
+  /* ============================================================
+     3. PROGRAM — 2-week loop, Mon–Fri
+     type 'reps': user taps Done when finished. type 'time': app runs the hold/walk countdown itself.
+  ============================================================ */
+  function day(title, sub, list){ return {title:title, sub:sub, ex:list}; }
+  function ex(id, sets, type, target, dur, rest){ return {id:id, sets:sets, type:type, target:target, dur:dur, rest:rest}; }
+
+  var PROGRAM = {
+    A: [
+      day("Push &amp; Pull","Upper body strength",[
+        ex("pushup",3,"reps","10–12",0,60),
+        ex("row",3,"reps","10 / side",0,60),
+        ex("pullup",4,"reps","max (aim 4–8)",0,90),
+        ex("press",3,"reps","8–10 / side",0,60),
+        ex("dip",3,"reps","10–12",0,60),
+        ex("plank",3,"time","30–45s hold",40,45)
+      ]),
+      day("Hips &amp; Glutes","Knee-friendly posterior chain",[
+        ex("deadlift",3,"reps","10–12",0,60),
+        ex("hipthrust",3,"reps","12–15",0,60),
+        ex("calfraise",3,"reps","15–20",0,45),
+        ex("sideraise",3,"reps","15 / side",0,45),
+        ex("donkeykick",3,"reps","12 / side",0,45),
+        ex("birddog",3,"reps","10 / side",0,45)
+      ]),
+      day("Cardio &amp; Core","Steady state + trunk work",[
+        ex("treadmill",1,"time","20 min steady",1200,60),
+        ex("plank",3,"time","30–45s hold",40,45),
+        ex("deadbug",3,"reps","10 / side",0,45),
+        ex("twist",3,"reps","15 / side",0,45),
+        ex("sideplank",2,"time","20–30s / side",25,45),
+        ex("superman",3,"time","~20s hold",20,45)
+      ]),
+      day("Full-Body Kettlebell","One bell, whole body",[
+        ex("swing",4,"reps","15",0,60),
+        ex("floorpress",3,"reps","10 / side",0,60),
+        ex("renegaderow",3,"reps","8 / side",0,60),
+        ex("halo",3,"reps","8 / side",0,45),
+        ex("hipthrust",3,"reps","15",0,45),
+        ex("mobility",2,"reps","8 cycles",0,30)
+      ]),
+      day("Upper Body + Mobility","Pull focus &amp; loosen up",[
+        ex("pullup",4,"reps","max",0,90),
+        ex("pushup",3,"reps","10–12 (wide hands)",0,60),
+        ex("row",3,"reps","10 / side",0,60),
+        ex("press",3,"reps","10 / side",0,60),
+        ex("superman",3,"time","~20s hold",20,45),
+        ex("mobility",2,"reps","8 cycles",0,30)
+      ])
+    ],
+    B: [
+      day("Push &amp; Pull Endurance","Higher reps, shorter rest",[
+        ex("pushup",3,"reps","12–15 (slow, 3s down)",0,45),
+        ex("row",3,"reps","12–15 / side",0,45),
+        ex("pullup",4,"reps","max",0,90),
+        ex("press",3,"reps","12 / side",0,45),
+        ex("shouldertap",3,"reps","16 total",0,45),
+        ex("reachunder",3,"reps","10 / side",0,45)
+      ]),
+      day("Posterior Chain &amp; Glutes","Knee-friendly, higher volume",[
+        ex("deadlift",3,"reps","12",0,45),
+        ex("hipthrust",3,"reps","15–20",0,45),
+        ex("glutemarch",3,"reps","10 / side",0,45),
+        ex("clamshell",3,"reps","15 / side",0,45),
+        ex("calfraisesl",3,"reps","12 / side",0,45),
+        ex("birddog",3,"reps","10 / side, 2s pause",0,45)
+      ]),
+      day("Cardio Intervals &amp; Core","Push the pace a little",[
+        ex("treadmillint",1,"time","~20 min",1200,60),
+        ex("mountainclimber",3,"reps","20 total",0,45),
+        ex("plank",3,"time","45–60s hold",50,45),
+        ex("twist",3,"reps","20 / side",0,45),
+        ex("sideplank",2,"time","30s / side",30,45),
+        ex("supermanpulse",3,"reps","15",0,45)
+      ]),
+      day("Full-Body Kettlebell II","Circuit style, less rest",[
+        ex("swing",4,"reps","20",0,45),
+        ex("boxsquat",3,"reps","12",0,60),
+        ex("floorpress",3,"reps","12 / side",0,45),
+        ex("renegaderow",3,"reps","8 / side",0,45),
+        ex("hipthrust",3,"reps","15",0,45),
+        ex("plank",3,"time","~40s hold",40,45)
+      ]),
+      day("Upper Body + Mobility II","Pull focus &amp; loosen up",[
+        ex("pullup",4,"reps","max",0,90),
+        ex("pushup",3,"reps","12 (feet elevated)",0,60),
+        ex("row",3,"reps","12 / side",0,45),
+        ex("press",3,"reps","12 / side",0,45),
+        ex("superman",3,"time","~25s hold",25,45),
+        ex("mobility",2,"reps","10 cycles",0,30)
+      ])
+    ]
+  };
+
+  var DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  var DAY_NAMES_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+  /* Twelve stations: 70s + eleven 60s, eleven 15s transitions,
+     and one 5s preparation = 900s. Randomize within a gentle progression. */
+  function shuffle(list){
+    var result=list.slice();
+    for(var i=result.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1)),temp=result[i]; result[i]=result[j]; result[j]=temp;
+    }
+    return result;
+  }
+  function createWarmup(){
+    var previous=PROGRAM.R && PROGRAM.R[0].ex.map(function(item){return item.id;}).join(',');
+    var ids;
+    for(var attempt=0;attempt<5;attempt++){
+      var mobility=shuffle(['shoulderroll','armreach','wallslide']).slice(0,2)
+        .concat(shuffle(['sidereach','chestopener','trunkturn']).slice(0,2))
+        .concat(shuffle(['anklerock','hiphinge','heeltoe']).slice(0,2));
+      ids=shuffle(['march','steptouch','heeldig']).concat(shuffle(mobility),shuffle(['calfstretch','hamstring','hipflexor']));
+      if(ids.join(',')!==previous) break;
+    }
+    if(ids.join(',')===previous){ var first=ids[0];ids[0]=ids[1];ids[1]=first; }
+    var items=ids.map(function(id,i){
+      var item=ex(id,1,'time',i===0?'70s easy movement':i>=9?'60s · switch sides halfway':'60s easy repetitions',i===0?70:60,15);
+      item.section=i<3?'Get moving':i<9?'Mobilize':'Stretch & unwind';
+      item.switchSides=i>=9;
+      return item;
+    });
+    PROGRAM.R=[day('Warmup &amp; Stretch','15 min · standing · no weights',items)];
+    return PROGRAM.R[0];
+  }
+
+  /* ============================================================
+     4. DATE / SCHEDULE LOGIC
+  ============================================================ */
+  var EPOCH_MONDAY = new Date(2024,0,1); // a known Monday
+
+  function mondayOf(d){
+    var day0 = (d.getDay()+6)%7; // Mon=0..Sun=6
+    var m = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    m.setDate(m.getDate()-day0);
+    return m;
+  }
+  function weekParity(d){
+    var thisMon = mondayOf(d);
+    var diffDays = Math.round((thisMon-EPOCH_MONDAY)/86400000);
+    var weekIndex = Math.floor(diffDays/7);
+    return ((weekIndex%2)+2)%2; // 0 -> Week A, 1 -> Week B
+  }
+  function isoDate(d){
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function fmtLong(d){
+    return DAY_NAMES_FULL[d.getDay()]+", "+d.getDate()+" "+d.toLocaleString(undefined,{month:"long"});
+  }
+
+  /* ============================================================
+     5. STORAGE
+  ============================================================ */
+  var store = {
+    get:function(k,def){ try{ var v=localStorage.getItem(k); return v===null?def:JSON.parse(v); }catch(e){ return def; } },
+    set:function(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  };
+  var soundOn = store.get("loopbell.sound", true);
+
+  /* ============================================================
+     6. AUDIO + WAKE LOCK
+  ============================================================ */
+  var audioCtx = null;
+  function ensureAudio(){
+    if(!soundOn) return null;
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      if(audioCtx.state==="suspended") audioCtx.resume();
+      return audioCtx;
+    }catch(e){ return null; }
+  }
+  function tone(ctx, freq, start, dur, vol){
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = freq;
+    g.gain.value = 0;
+    o.connect(g); g.connect(ctx.destination);
+    var t0 = ctx.currentTime + start;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(vol, t0+0.02);
+    g.gain.linearRampToValueAtTime(0, t0+dur);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }
+  function playRestEnd(){
+    var ctx = ensureAudio(); if(!ctx) return;
+    tone(ctx,660,0,0.16,0.18); tone(ctx,880,0.2,0.16,0.18); tone(ctx,1046,0.4,0.28,0.2);
+    if(navigator.vibrate) try{ navigator.vibrate([120,80,120,80,200]); }catch(e){}
+  }
+  function playWorkEnd(){
+    var ctx = ensureAudio(); if(!ctx) return;
+    tone(ctx,740,0,0.22,0.22); tone(ctx,740,0.35,0.22,0.22); tone(ctx,740,0.7,0.3,0.24);
+    if(navigator.vibrate) try{ navigator.vibrate([150,100,150,100,220]); }catch(e){}
+  }
+  function playPrepEnd(){
+    var ctx = ensureAudio(); if(!ctx) return;
+    tone(ctx,520,0,0.14,0.16);
+    if(navigator.vibrate) try{ navigator.vibrate(80); }catch(e){}
+  }
+
+  var wakeLock = null;
+  function requestWakeLock(){
+    try{
+      if("wakeLock" in navigator){
+        navigator.wakeLock.request("screen").then(function(wl){ wakeLock = wl; }).catch(function(){});
+      }
+    }catch(e){}
+  }
+  function releaseWakeLock(){
+    try{ if(wakeLock){ wakeLock.release(); wakeLock=null; } }catch(e){}
+  }
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState==="visible" && state.view==="session") requestWakeLock();
+  });
+
+  /* ============================================================
+     7. STICK FIGURE RENDER + ANIMATION
+  ============================================================ */
+  function lerpPose(a,b,t){
+    var out = {};
+    Object.keys(a).forEach(function(key){
+      if(Array.isArray(a[key]) && Array.isArray(b[key])){
+        out[key] = a[key].map(function(v,i){ return v+(b[key][i]-v)*t; });
+      }
+    });
+    return out;
+  }
+  function ease(t){ return t*t*(3-2*t); }
+  function fmtTime(sec){
+    sec = Math.max(0,Math.ceil(sec));
+    if(sec>=60){ var m=Math.floor(sec/60), s=sec%60; return m+":"+String(s).padStart(2,"0"); }
+    return sec+"s";
+  }
+  function escapeHTML(value){
+    return String(value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});
+  }
+  function svgLine(a,b,cls){ return '<line class="'+cls+'" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'"/>'; }
+  function figureSVG(p,key,focus,title){
+    var out = '<svg viewBox="0 0 210 198" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+escapeHTML(title || 'Exercise position')+'">';
+    out += '<title>'+escapeHTML(title || 'Exercise position')+'</title><rect class="diagram-bg" x="5" y="5" width="200" height="184" rx="16"/>';
+    out += '<line class="groundline" x1="17" y1="178" x2="193" y2="178"/>';
+    if(key==='PULLUP') out += '<path class="equipment" d="M55 30 H147 M59 30 V51 M143 30 V51"/>';
+    if(key==='DIP') out += '<path class="equipment" d="M137 127 H182 V178 M142 127 V178"/>';
+    if(key==='BOXSQUAT') out += '<path class="equipment" d="M65 143 H117 M69 143 V178 M113 143 V178"/>';
+    if(key==='CALFSTRETCH' || key==='WALLSLIDE') out += '<path class="equipment" d="M'+(key==='WALLSLIDE'?154:185)+' 15 V177"/>';
+    if(key==='TREADMILL' || key==='TREADMILLINT') out += '<path class="equipment" d="M25 183 H176 L185 103 H155"/>';
+    out += svgLine(p.s,p.e2,'limb far')+svgLine(p.e2,p.a2,'limb far')+svgLine(p.p,p.k2,'limb far')+svgLine(p.k2,p.f2,'limb far');
+    if(p.curve) out += '<path class="torso" d="M'+p.s.join(' ')+' Q'+p.curve.join(' ')+' '+p.p.join(' ')+'"/>';
+    else out += svgLine(p.s,p.p,'torso');
+    out += svgLine([p.h[0],p.h[1]+p.h[2]],p.s,'neck');
+    out += svgLine(p.s,p.e,'limb')+svgLine(p.e,p.a,'limb')+svgLine(p.p,p.k,'limb')+svgLine(p.k,p.f,'limb');
+    out += '<circle class="headc" cx="'+p.h[0]+'" cy="'+p.h[1]+'" r="'+p.h[2]+'"/>';
+    ['s','e','p','k'].forEach(function(j){out += '<circle class="joint" cx="'+p[j][0]+'" cy="'+p[j][1]+'" r="3"/>';});
+    function toe(foot){
+      if(['CALFRAISE','CALFRAISESL','HEELTOE'].indexOf(key)>=0 && foot[1]>=160 && foot[1]<174) return [foot[0]+9,174];
+      if((key==='HEELDIG' && (foot[0]<80 || foot[0]>135)) || (key==='HAMSTRING' && foot[0]<80)) return [foot[0]+9,foot[1]-7];
+      return [foot[0]+9,foot[1]];
+    }
+    out += svgLine(p.f,toe(p.f),'foot')+svgLine(p.f2,toe(p.f2),'foot far');
+    if(['ROW','PRESS','DEADLIFT','SWING','FLOORPRESS','RENEGADEROW','HALO'].indexOf(key)>=0){
+      var bx=p.a[0],by=p.a[1]+13;
+      if(key==='FLOORPRESS'){ bx=p.a[0]-13; by=p.a[1]; }
+      out += '<g class="bell"><path d="M'+(bx-6)+' '+(by-5)+' v-5 a6 6 0 0 1 12 0 v5"/><circle cx="'+bx+'" cy="'+by+'" r="9"/></g>';
+    }
+    if(key==='CALFRAISE' || key==='CALFRAISESL' || key==='HEELTOE') out += '<path class="motion-arrow" d="M65 164 v-17 m-4 5 4-5 4 5"/>';
+    if(key==='SWING') out += '<path class="motion-arrow" d="M147 144 Q184 123 178 82 m-4 5 4-5 4 5"/>';
+    if(key==='HALO') out += '<path class="motion-arrow" d="M69 41 Q98 10 130 40 m-7-1 7 1-1-7"/>';
+    if(focus && p[focus]){
+      var point=p[focus];
+      out += '<circle class="focus-ring" cx="'+point[0]+'" cy="'+point[1]+'" r="12"/><circle class="focus-label" cx="'+(point[0]-10)+'" cy="'+(point[1]-12)+'" r="7"/><text class="focus-number" x="'+(point[0]-10)+'" y="'+(point[1]-9.5)+'" text-anchor="middle">1</text>';
+    }
+    return out+'</svg>';
+  }
+  function staticIcon(illusKey){ return figureSVG(POSES[illusKey][0],illusKey,null,illusKey.toLowerCase().replace(/_/g,' ')); }
+  function movementGuide(meta){
+    var frames=POSES[meta.illus];
+    var html='<div class="movement-guide"><div class="section-label">Movement phases</div><div class="phase-strip">';
+    meta.phases.forEach(function(ph,i){
+      html += '<figure class="phase-card"><figcaption><span class="phase-index">'+(i+1)+'</span> '+escapeHTML(ph[0])+'</figcaption>'+figureSVG(frames[i],meta.illus,ph[2],meta.name+': '+ph[0])+ '<p class="phase-tip"><b>①</b> '+escapeHTML(ph[1])+'</p></figure>';
+    });
+    html+='</div><div class="figure-key">Orange: near limb · Teal: far limb · ① form checkpoint</div>';
+    if(!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      html+='<button class="btn btn-ghost motion-toggle" data-action="togglemotion" data-illus="'+meta.illus+'" aria-expanded="false">Play movement</button><div class="motion-panel hidden"></div>';
+    }
+    return html+'</div>';
+  }
+  function coachingDetails(meta){
+    return '<div class="coaching"><p><strong>Setup</strong> '+escapeHTML(meta.setup)+'</p><p><strong>Move</strong> '+escapeHTML(meta.move)+'</p><p><strong>Breathe</strong> '+escapeHTML(meta.breathe)+'</p><p><strong>Avoid</strong> '+escapeHTML(meta.avoid)+'</p><p><strong>Make it easier</strong> '+escapeHTML(meta.easier)+'</p></div>';
+  }
+  var HOLD_MS=1000,TRANS_MS=1200,animHandle=null;
+  function stopAnim(){ if(animHandle!==null){ cancelAnimationFrame(animHandle); animHandle=null; } }
+  function animateInto(container,key){
+    stopAnim();
+    var poses=POSES[key];
+    var sequence=poses.length===2 ? [0,1] : [0,1,0,2];
+    if(key==='HALO') sequence=[0,1,2,3];
+    if(key==='SHOULDERROLL') sequence=[0,1,2];
+    var start=performance.now();
+    function frame(now){
+      var elapsed=now-start,period=HOLD_MS+TRANS_MS;
+      var i=Math.floor(elapsed/period)%sequence.length,next=(i+1)%sequence.length;
+      var fraction=Math.max(0,Math.min(1,(elapsed%period-HOLD_MS)/TRANS_MS));
+      container.innerHTML=figureSVG(lerpPose(poses[sequence[i]],poses[sequence[next]],ease(fraction)),key,null,'Movement illustration; follow the labeled phase instructions');
+      animHandle=requestAnimationFrame(frame);
+    }
+    animHandle=requestAnimationFrame(frame);
+  }
+  function toggleMotion(btn){
+    var panel=btn.closest('.movement-guide').querySelector('.motion-panel');
+    var playing=btn.getAttribute('aria-expanded')==='true';
+    btn.setAttribute('aria-expanded',String(!playing));
+    btn.textContent=playing?'Play movement':'Pause movement';
+    panel.classList.toggle('hidden',playing);
+    if(playing) stopAnim(); else animateInto(panel,btn.getAttribute('data-illus'));
+  }
+
+
+  /* ============================================================
+     8. APP STATE + VIEWS
+  ============================================================ */
+  var els = {
+    home: document.getElementById("view-home"),
+    day: document.getElementById("view-day"),
+    session: document.getElementById("view-session"),
+    done: document.getElementById("view-done"),
+    modalRoot: document.getElementById("modalRoot")
+  };
+
+  var state = { view:"home", dayWeek:null, dayIdx:null, steps:null, stepPos:0, paused:false, timerPhase:null };
+
+  function show(view){
+    ["home","day","session","done"].forEach(function(v){ els[v].classList.toggle("hidden", v!==view); });
+    state.view = view;
+    if(view!=="session"){ stopAnim(); releaseWakeLock(); }
+  }
+
+  function todayInfo(){
+    var now = new Date();
+    var dow = now.getDay(); // 0 Sun .. 6 Sat
+    var isWorkday = dow>=1 && dow<=5;
+    var week = weekParity(now)===0 ? "A" : "B";
+    var idx = isWorkday ? dow-1 : null;
+    return {now:now, dow:dow, isWorkday:isWorkday, week:week, idx:idx};
+  }
+
+  /* ---------- HOME ---------- */
+  function renderHome(){
+    var info = todayInfo();
+    var html = "";
+    html += '<div class="today-date">'+fmtLong(info.now)+'</div>';
+
+    if(info.isWorkday){
+      var d = PROGRAM[info.week][info.idx];
+      html += '<div class="card hero" data-action="opendaytoday">'+
+        '<div class="eyebrow">Week '+info.week+' &middot; Day '+(info.idx+1)+' of 5</div>'+
+        '<h2>'+d.title+'</h2>'+
+        '<div class="meta">'+d.sub+' &middot; '+d.ex.length+' exercises</div>'+
+        '<button class="btn btn-primary btn-block" data-action="startsession">Start Workout</button>'+
+      '</div>';
+    } else {
+      var addDays = info.dow===0 ? 1 : (8-info.dow); // Sun->+1 (Mon), Sat->+2 (Mon)
+      var nextDate = new Date(info.now); nextDate.setDate(nextDate.getDate()+addDays);
+      var nextWeek = weekParity(nextDate)===0 ? "A" : "B";
+      var nd = PROGRAM[nextWeek][0];
+      html += '<div class="card hero hero-rest">'+
+        '<div class="eyebrow">Rest day</div>'+
+        '<h2>Recover &amp; stretch</h2>'+
+        '<div class="meta">Next up: Week '+nextWeek+' &middot; '+nd.title+' ('+DAY_NAMES_FULL[nextDate.getDay()]+')</div>'+
+        '<button class="btn btn-secondary btn-block" data-action="previewnext" data-week="'+nextWeek+'" data-idx="0">Preview that workout</button>'+
+      '</div>';
+    }
+
+    html += '<div class="card hero warmup-card"><div class="eyebrow">Morning or work break</div>'+
+      '<h2>Move, loosen, reset</h2><div class="meta">A fresh 15-minute warmup &amp; stretch. Gentle repeated movement, then stretches. No weights; a wall or sturdy chair is useful.</div>'+
+      '<button class="btn btn-rest btn-block" data-action="randomwarmup">Random warmup / stretch</button></div>';
+
+    // This week strip
+    var thisMon = mondayOf(info.now);
+    var thisWeekLabel = weekParity(info.now)===0 ? "A" : "B";
+    html += '<div class="section-label">This week &middot; Week '+thisWeekLabel+'</div>';
+    html += '<div class="chip-row">';
+    for(var i=0;i<5;i++){
+      var dt = new Date(thisMon); dt.setDate(dt.getDate()+i);
+      var iso = isoDate(dt);
+      var isToday = iso===isoDate(info.now);
+      var dTitle = PROGRAM[thisWeekLabel][i].title.replace(/&amp;/g,"&");
+      html += '<button class="chip'+(isToday?' today':'')+'" data-action="openday" data-week="'+thisWeekLabel+'" data-idx="'+i+'">'+
+        '<span>'+DAY_NAMES[dt.getDay()]+'</span>'+
+        '<span class="d">'+dt.getDate()+'</span>'+
+        '<span>&nbsp;</span>'+
+      '</button>';
+    }
+    html += '</div>';
+
+    // Following week preview
+    var otherLabel = thisWeekLabel==="A" ? "B" : "A";
+    var relation = weekParity(new Date(thisMon.getFullYear(),thisMon.getMonth(),thisMon.getDate()+7))===0 ? "A" : "B";
+    html += '<div class="section-label">Next week &middot; Week '+relation+'</div>';
+    html += '<div class="chip-row">';
+    for(var j=0;j<5;j++){
+      html += '<button class="chip next-week" data-action="openday" data-week="'+relation+'" data-idx="'+j+'">'+
+        '<span>'+DAY_NAMES[j+1]+'</span>'+
+        '<span class="d">&middot;</span>'+
+        '<span>&nbsp;</span>'+
+      '</button>';
+    }
+    html += '</div>';
+
+    html += '<div class="infobar">&#9432;&nbsp; This program emphasizes hip hinges and glute work. Lower knee load does not guarantee comfort: adapt the range and stop movements that cause joint pain. Tap the info button for more.</div>';
+
+    els.home.innerHTML = html;
+  }
+
+  /* ---------- DAY DETAIL ---------- */
+  function renderDay(week, idx){
+    state.dayWeek = week; state.dayIdx = idx;
+    var d = PROGRAM[week][idx];
+    var html = '<div class="backrow"><button class="backbtn" data-action="home">&#8592;</button><h2>'+d.title+'</h2></div>';
+    html += '<div class="today-date" style="margin-top:-8px;">'+(week==='R'?'Any day':('Week '+week+' &middot; Day '+(idx+1)))+' &middot; '+d.sub+'</div>';
+    if(week==='R') html += '<div class="infobar">12 stations with 15-second transitions. Repeat dynamic moves slowly; for the final stretches, hold gently for 15–20 seconds, release, and switch sides at the halfway cue. Stay within a comfortable range.</div>';
+    html += '<div class="exlist">';
+    d.ex.forEach(function(item, i){
+      var meta = EX[item.id];
+      var setsText = item.type==="time" ? (item.sets+' &times; '+item.target) : (item.sets+' &times; '+item.target);
+      html += '<div class="exrow" role="button" tabindex="0" aria-label="Preview '+meta.name+'" data-action="preview" data-i="'+i+'">'+
+        '<div class="exrow-icon">'+staticIcon(meta.illus)+'</div>'+
+        '<div class="exrow-body">'+
+          '<div class="exrow-name">'+meta.name+'</div>'+
+          '<div class="exrow-sub">'+(item.section?item.section+' &middot; ':'')+setsText+' &middot; '+(week==='R'?'transition ':'rest ')+item.rest+'s</div>'+
+          (meta.knee?'<div class="badge-knee">Lower knee load · adapt to comfort</div>':'')+
+        '</div>'+
+      '</div>';
+    });
+    html += '</div>';
+    if(week==='R') html += '<div class="warmup-actions"><button class="btn btn-ghost" data-action="reshuffle">Shuffle again</button><button class="btn btn-rest" data-action="startsession">Start 15-minute session</button></div>';
+    else html += '<button class="btn btn-primary btn-block" data-action="startsession">Start Session</button>';
+    els.day.innerHTML = html;
+  }
+
+  function openPreview(i){
+    var d = PROGRAM[state.dayWeek][state.dayIdx];
+    var item = d.ex[i];
+    var meta = EX[item.id];
+    var setsText = item.sets+' &times; '+item.target;
+    els.modalRoot.innerHTML =
+      '<div class="overlay" data-action="closemodal"><div class="sheet" role="dialog" aria-modal="true" aria-label="'+meta.name+' instructions" tabindex="-1">'+
+        '<h3>'+meta.name+'</h3>'+
+        '<div class="exrow-sub">'+setsText+' &middot; '+(state.dayWeek==='R'?'transition ':'rest ')+item.rest+'s</div>'+
+        movementGuide(meta)+coachingDetails(meta)+
+        '<div class="closebar"><button class="btn btn-ghost" data-action="closemodal">Close</button></div>'+
+      '</div></div>';
+    modalReturnFocus=document.activeElement;
+    els.modalRoot.querySelector('.sheet').focus();
+  }
+  function closePreview(){
+    stopAnim();
+    els.modalRoot.innerHTML = "";
+    if(modalReturnFocus && modalReturnFocus.isConnected) modalReturnFocus.focus();
+    modalReturnFocus=null;
+  }
+  var modalReturnFocus=null;
+
+  /* ---------- SESSION ---------- */
+  function buildSteps(week, idx){
+    var d = PROGRAM[week][idx];
+    var steps = [];
+    d.ex.forEach(function(item, exI){
+      for(var s=1;s<=item.sets;s++){
+        if(item.id==='sideplank' && item.type==='time'){
+          ['Left','Right'].forEach(function(side){ steps.push({exI:exI,id:item.id,setNum:s,totalSets:item.sets,type:item.type,target:item.target,dur:item.dur,rest:item.rest,side:side}); });
+        } else steps.push({exI:exI, id:item.id, setNum:s, totalSets:item.sets, type:item.type, target:item.target, dur:item.dur, rest:item.rest,section:item.section,switchSides:item.switchSides});
+      }
+    });
+    return steps;
+  }
+
+  function startSession(week, idx){
+    clearTimers(); stopAnim();
+    state.dayWeek = week; state.dayIdx = idx;
+    state.steps = buildSteps(week, idx);
+    state.stepPos = 0;
+    state.paused=false;
+    requestWakeLock();
+    show("session");
+    renderSessionStep();
+    if(week==='R') beginWorkStep();
+  }
+
+  function dayLabel(){ return PROGRAM[state.dayWeek][state.dayIdx].title; }
+  function exCountLabel(){ return PROGRAM[state.dayWeek][state.dayIdx].ex.length; }
+
+  var timerId=null,activeTimer=null,PREP_SECONDS=5;
+  function clearTimers(){
+    if(timerId!==null){clearInterval(timerId);timerId=null;}
+    activeTimer=null; state.timerPhase=null; state.paused=false;
+  }
+  function tickTimer(){
+    if(!activeTimer || state.paused) return;
+    var remaining=Math.max(0,Math.ceil((activeTimer.endAt-Date.now())/1000));
+    activeTimer.update(remaining);
+    if(Date.now()>=activeTimer.endAt){
+      var done=activeTimer.done;
+      clearTimers(); done();
+    }
+  }
+  function runCountdown(phase,seconds,update,done){
+    clearTimers();
+    activeTimer={phase:phase,endAt:Date.now()+seconds*1000,update:update,done:done};
+    state.timerPhase=phase;
+    update(seconds);
+    timerId=setInterval(tickTimer,200);
+  }
+  function pauseTimer(){
+    if(!activeTimer) return;
+    var btn=els.session.querySelector('[data-action="pausetimer"]');
+    if(!state.paused){
+      activeTimer.pausedMs=Math.max(0,activeTimer.endAt-Date.now());
+      state.paused=true; clearInterval(timerId);timerId=null;
+      if(btn) btn.textContent='Resume';
+    } else {
+      activeTimer.endAt=Date.now()+activeTimer.pausedMs;
+      state.paused=false;
+      if(btn) btn.textContent='Pause';
+      timerId=setInterval(tickTimer,200); tickTimer();
+    }
+    if(btn) btn.setAttribute('aria-pressed',String(state.paused));
+  }
+  function renderSessionStep(){
+    clearTimers(); stopAnim();
+    var step=state.steps[state.stepPos],meta=EX[step.id],exNum=step.exI+1;
+    var dots='';
+    for(var s=1;s<=step.totalSets;s++) dots+='<span class="setdot '+(s<step.setNum?'done':s===step.setNum?'active':'')+'"></span>';
+    var html='<div class="session-top"><button class="exit-btn" aria-label="Exit session" data-action="exitsession">&#10005;</button>'+
+      '<div class="progress-text">'+(step.section?step.section+' · ':'')+'Exercise '+exNum+' / '+exCountLabel()+' · Set '+step.setNum+'/'+step.totalSets+'</div><div style="width:22px"></div></div>';
+    html+='<div class="stage"><h2 class="stage-name">'+meta.name+(step.side?' · '+step.side+' side':'')+'</h2>'+
+      (step.type==='time'?'<div class="stage-target" id="workNum">'+fmtTime(step.dur)+'</div>':'<div class="stage-target">'+step.target+'</div>')+
+      '<div class="setdots">'+dots+'</div><p class="stage-cue">'+escapeHTML(meta.cue)+'</p>'+
+      '<div class="phase-status" id="phaseStatus" role="status" aria-live="polite">'+(step.switchSides?'First side · switch at halfway':'')+'</div>'+
+      movementGuide(meta)+'<details class="form-details"><summary>Setup &amp; form notes</summary>'+coachingDetails(meta)+'</details></div>';
+    if(step.type==='time') html+='<button class="btn btn-primary btn-block" data-action="startwork">Start</button>';
+    else html+='<button class="btn btn-primary btn-block" data-action="donereps">Set complete</button>';
+    els.session.innerHTML=html;
+  }
+  function startWorkNow(){
+    var step=state.steps[state.stepPos];
+    var controls=els.session.querySelector('.session-controls');
+    if(controls) controls.innerHTML='<button class="btn btn-ghost" data-action="pausetimer" aria-pressed="false">Pause</button><button class="btn btn-secondary" data-action="skipwork">Skip exercise</button>';
+    runWorkTimer(step.dur);
+  }
+  function beginWorkStep(){
+    if(activeTimer) return;
+    var step=state.steps[state.stepPos];
+    if(!step || step.type!=='time') return;
+    var btn=els.session.querySelector('[data-action="startwork"]');
+    if(btn) btn.outerHTML='<div class="session-controls"><button class="btn btn-ghost" data-action="pausetimer" aria-pressed="false">Pause</button><button class="btn btn-secondary" data-action="skipwork">Skip exercise</button></div>';
+    if(state.dayWeek==='R' && state.stepPos>0){startWorkNow();return;}
+    runCountdown('prep',PREP_SECONDS,function(remain){
+      var num=document.getElementById('workNum');if(num) num.textContent='Ready… '+remain;
+    },function(){playPrepEnd();startWorkNow();});
+  }
+  function runWorkTimer(seconds){
+    var step=state.steps[state.stepPos],switched=false;
+    runCountdown('work',seconds,function(remain){
+      var num=document.getElementById('workNum');if(num) num.textContent=fmtTime(remain);
+      var status=document.getElementById('phaseStatus');
+      if(step.switchSides && !switched && remain<=seconds/2){
+        switched=true;playPrepEnd();if(status) status.textContent='Switch sides · move gently into position';
+      }
+      if(step.id==='treadmillint' && status){
+        var elapsed=seconds-remain;
+        status.textContent=elapsed<120 || remain<=120?'Easy walk · settle in or cool down':Math.floor((elapsed-120)/60)%2===0?'Brisk minute · comfortable effort':'Easy minute · recover';
+      }
+    },function(){playWorkEnd();advanceAfterSet();});
+  }
+  function isLastStep(){return state.stepPos>=state.steps.length-1;}
+  function advanceAfterSet(){
+    clearTimers();stopAnim();
+    if(isLastStep()){finishSession();return;}
+    startRest(state.steps[state.stepPos].rest);
+  }
+  function nextSessionStep(){
+    clearTimers();state.stepPos++;renderSessionStep();
+    if(state.dayWeek==='R') beginWorkStep();
+  }
+  function startRest(seconds){
+    stopAnim();
+    var next=state.steps[state.stepPos+1],meta=EX[next.id];
+    var same=next.exI===state.steps[state.stepPos].exI;
+    var label=state.dayWeek==='R'?'Transition':'Rest';
+    els.session.innerHTML='<div class="session-top"><button class="exit-btn" aria-label="Exit session" data-action="exitsession">&#10005;</button><div class="progress-text">'+label+'</div><div style="width:22px"></div></div>'+
+      '<div class="rest-stage"><div class="rest-label">'+label+'</div><div class="rest-num">'+seconds+'</div>'+
+      '<div class="rest-next">Next: '+meta.name+(next.side?' · '+next.side+' side':'')+(same?' · set '+next.setNum:'')+'</div>'+
+      '<div class="rest-controls"><button data-action="restminus">−15s</button><button data-action="restskip">Skip</button><button data-action="restplus">+15s</button></div></div>'+
+      '<button class="btn btn-ghost btn-block" data-action="pausetimer" aria-pressed="false">Pause</button>'+
+      '<div class="card">'+movementGuide(meta)+'<p class="stage-cue" style="margin-top:10px">'+escapeHTML(meta.cue)+'</p></div>';
+    runCountdown('rest',seconds,function(remain){var num=els.session.querySelector('.rest-num');if(num) num.textContent=fmtTime(remain);},function(){playRestEnd();nextSessionStep();});
+    els.session._restAdjust=function(delta){
+      if(!activeTimer || activeTimer.phase!=='rest') return;
+      if(state.paused){activeTimer.pausedMs=Math.max(0,activeTimer.pausedMs+delta*1000);activeTimer.update(Math.ceil(activeTimer.pausedMs/1000));}
+      else{activeTimer.endAt=Math.max(Date.now(),activeTimer.endAt+delta*1000);tickTimer();}
+    };
+    els.session._restSkip=function(){
+      if(!activeTimer || activeTimer.phase!=='rest') return;
+      playRestEnd();nextSessionStep();
+    };
+  }
+
+  function finishSession(){
+    clearTimers(); stopAnim(); releaseWakeLock();
+    playRestEnd();
+    var d = PROGRAM[state.dayWeek][state.dayIdx];
+    els.done.innerHTML =
+      '<div class="done-emoji">&#9733;</div>'+
+      '<h2>Session complete</h2>'+
+      '<p class="cue">'+d.title+' &middot; '+d.ex.length+' exercises &middot; nice work.</p>'+
+      (state.dayWeek==='R'?'<button class="btn btn-rest btn-block" data-action="randomwarmup" style="max-width:280px;">Create another warmup</button>':'')+
+      '<button class="btn btn-primary btn-block" data-action="home" style="max-width:280px;">Back to Schedule</button>';
+    show("done");
+  }
+
+  function exitSession(){
+    clearTimers(); stopAnim(); releaseWakeLock();
+    show("day");
+    renderDay(state.dayWeek, state.dayIdx);
+  }
+
+  /* ---------- INFO MODAL ---------- */
+  function openInfo(){
+    modalReturnFocus=document.activeElement;
+    els.modalRoot.innerHTML =
+      '<div class="overlay" data-action="closemodal"><div class="sheet" role="dialog" aria-modal="true" aria-label="About this program" tabindex="-1">'+
+        '<h3>About this program</h3>'+
+        '<div class="cue">A 2-week loop, 5 sessions a week, built around a 12kg kettlebell, a pull-up bar, a treadmill, and the floor.</div>'+
+        '<div class="cue"><strong>Knees:</strong> hip hinges and glute work emphasize lower knee loads. Labels are not a guarantee that an exercise will suit your knees. Kneeling, incline walking, and chair squats can still irritate them: use the easier option or skip a painful movement.</div>'+
+        '<div class="cue"><strong>Warmup &amp; stretch:</strong> the random session starts with easy stepping, adds six mobility movements covering shoulders, trunk, hips and ankles, then finishes with three gentle stretches. It takes 15 minutes with the default transitions and no pauses. Use a comfortable talking pace; avoid bouncing into stretches.</div>'+
+        '<div class="cue"><strong>Load &amp; sides:</strong> choose a load you can control; the 12kg bell may be too heavy for presses or halos. Rep targets marked per side include both sides; floor presses also use both sides. Timed side planks have separate left and right holds.</div>'+
+        '<div class="cue"><strong>Progression:</strong> with one kettlebell weight, progress by adding reps first, then by slowing your tempo (e.g. 3 seconds down on push-ups) or pausing at the hardest point. When pull-ups get easy, add slow negatives or a pause at the top.</div>'+
+        '<div class="cue"><strong>Rest days:</strong> weekends are open &mdash; walk, stretch, or fully recover.</div>'+
+        '<div class="cue" style="color:var(--muted);">Stop if you feel sharp or joint pain, dizziness, or unusual breathlessness. Persistent pain is a reason to ask a physiotherapist or doctor. Diagrams show form checkpoints; use the written range and easier options.</div>'+
+        '<div class="cue"><strong>Further guidance:</strong> <a href="https://www.nhs.uk/live-well/exercise/how-to-warm-up-before-exercising/" target="_blank" rel="noopener noreferrer">NHS warmup</a> · <a href="https://www.nhs.uk/live-well/exercise/flexibility-exercises/" target="_blank" rel="noopener noreferrer">NHS flexibility</a> · <a href="https://www.acefitness.org/resources/everyone/exercise-library/" target="_blank" rel="noopener noreferrer">ACE exercise library</a>.</div>'+
+        '<div class="closebar"><button class="btn btn-ghost" data-action="closemodal">Close</button></div>'+
+      '</div></div>';
+    els.modalRoot.querySelector('.sheet').focus();
+  }
+
+  /* ============================================================
+     9. EVENTS
+  ============================================================ */
+  document.getElementById("soundBtn").addEventListener("click", function(){
+    soundOn = !soundOn;
+    store.set("loopbell.sound", soundOn);
+    this.textContent = soundOn ? "🔊" : "🔇";
+    ensureAudio();
+  });
+  document.getElementById("soundBtn").textContent = soundOn ? "🔊" : "🔇";
+  document.getElementById("infoBtn").addEventListener("click", openInfo);
+
+  document.getElementById("app").addEventListener("click", function(e){
+    var t = e.target.closest("[data-action]");
+    if(!t) return;
+    var action = t.getAttribute("data-action");
+    var info = todayInfo();
+
+    if(action==="home"){ clearTimers(); show("home"); renderHome(); }
+    else if(action==="randomwarmup"){ createWarmup();show('day');renderDay('R',0); }
+    else if(action==="reshuffle"){ createWarmup();renderDay('R',0); }
+    else if(action==="opendaytoday"){ if(info.isWorkday){ show("day"); renderDay(info.week, info.idx); } }
+    else if(action==="openday"){ show("day"); renderDay(t.getAttribute("data-week"), parseInt(t.getAttribute("data-idx"),10)); }
+    else if(action==="previewnext"){ show("day"); renderDay(t.getAttribute("data-week"), parseInt(t.getAttribute("data-idx"),10)); }
+    else if(action==="startsession"){
+      var w = state.dayWeek, i = state.dayIdx;
+      if(state.view==='home' || w===null || w===undefined){ w = info.week; i = info.idx; }
+      if(w===null || w===undefined || i===null || i===undefined) return;
+      ensureAudio();
+      startSession(w, i);
+    }
+    else if(action==="preview"){ openPreview(parseInt(t.getAttribute("data-i"),10)); }
+    else if(action==="togglemotion"){ toggleMotion(t); }
+    else if(action==="pausetimer"){ pauseTimer(); }
+    else if(action==="startwork"){
+      ensureAudio();
+      beginWorkStep();
+    }
+    else if(action==="donereps"){
+      ensureAudio();
+      advanceAfterSet();
+    }
+    else if(action==="skipwork"){
+      clearTimers();
+      playWorkEnd();
+      advanceAfterSet();
+    }
+    else if(action==="exitsession"){ exitSession(); }
+    else if(action==="restminus"){ els.session._restAdjust && els.session._restAdjust(-15); }
+    else if(action==="restplus"){ els.session._restAdjust && els.session._restAdjust(15); }
+    else if(action==="restskip"){ els.session._restSkip && els.session._restSkip(); }
+  });
+
+  els.modalRoot.addEventListener("click", function(e){
+    if(e.target.getAttribute("data-action")==="closemodal"){ closePreview(); }
+    else {
+      var btn=e.target.closest('[data-action="togglemotion"]');
+      if(btn) toggleMotion(btn);
+    }
+  });
+  document.getElementById('app').addEventListener('keydown',function(e){
+    var row=e.target.closest('.exrow[role="button"]');
+    if(row && (e.key==='Enter' || e.key===' ')){e.preventDefault();row.click();}
+  });
+  document.addEventListener('keydown',function(e){
+    var sheet=els.modalRoot.querySelector('.sheet');
+    if(!sheet) return;
+    if(e.key==='Escape'){e.preventDefault();closePreview();return;}
+    if(e.key==='Tab'){
+      var focusable=sheet.querySelectorAll('button,a[href],summary,[tabindex="0"]');
+      var first=focusable[0],last=focusable[focusable.length-1];
+      if(e.shiftKey && (document.activeElement===first || document.activeElement===sheet)){e.preventDefault();last.focus();}
+      else if(!e.shiftKey && (document.activeElement===last || document.activeElement===sheet)){e.preventDefault();first.focus();}
+    }
+  });
+
+  /* ============================================================
+     10. BOOT
+  ============================================================ */
+  function start(){
+    renderHome();
+    show("home");
+    setInterval(function(){ if(state.view==="home") renderHome(); }, 60000);
+  }
+  if(window.claude && window.claude.hot){
+    window.claude.hot.ready ? window.claude.hot.ready(start) : start();
+  } else {
+    start();
+  }
+})();
+</script>
+
+</body>
+</html>
