@@ -39,7 +39,7 @@ git push origin main
 ## What changed
 
 - All 31 original exercise descriptions now include setup, movement, breathing, common mistakes, and easier options.
-- Generated SVG diagrams show every exercise's phases, equipment where relevant, two distinct limbs, and marked form checkpoints. Variants such as clamshells, shoulder taps, and bridge marches have separate drawings. Optional animations can be paused; reduced-motion settings keep the static diagrams.
+- The current S3 version uses static WebP exercise illustrations, including 28 embedded images. It also references 16 separate images under `assets/exercises/`; the source server currently returns HTTP 403 for those files, so those illustrations are unavailable. The application HTML is preserved as supplied.
 - **Random warmup / stretch** creates 12 stations from 15 standing options: three easy stepping movements, six randomly selected mobility exercises covering upper body, trunk and lower body, and three stretches. Preview the exercises, shuffle again, then start.
 - Default timing is five seconds of preparation, 730 seconds of activity and eleven 15-second transitions: 15 minutes before pauses or timing adjustments. Subsequent stations start automatically. Stretch stations cue a side switch halfway through.
 - Timed side planks include both sides of each set. Single-bell floor press targets explicitly specify reps per side.
@@ -54,7 +54,7 @@ node --test tests/loop-and-bell.test.cjs
 
 The 15 checks use the actual application script with a lightweight DOM and controlled clock. They cover exercise metadata, randomization, duration, progression, pause/resume, side switches, exits, both-side holds, reduced motion, previews, and schedule navigation. They do not substitute for browser layout testing.
 
-For a browser check, use a narrow viewport, preview an exercise, play/pause its animation, then start a warmup and exercise the pause, skip, transition and exit controls. Repeat with reduced motion and dark mode enabled.
+For a browser check, use a narrow viewport, preview an exercise, then start a warmup and exercise the pause, skip, transition and exit controls. Repeat with reduced motion and dark mode enabled. The tests validate image references and embedded WebP integrity; they do not certify that external images are available.
 
 ## Exercise guidance references
 

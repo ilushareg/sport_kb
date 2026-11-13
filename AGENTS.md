@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-`loop-and-bell.html` contains the standalone application, styles, exercise data, and SVG illustrations. `index.html` is the GitHub Pages entry point. `tests/loop-and-bell.test.cjs` tests the actual inline script using Node's built-in test runner. `.github/workflows/check.yml` runs those tests. No dependency manifests or build step are needed. Keep the standalone layout until a deliberate restructuring is requested.
+`loop-and-bell.html` contains the standalone application, styles, exercise data, and embedded WebP illustrations, with additional image references under `assets/exercises/` (see README for source availability). `index.html` is the GitHub Pages entry point. `tests/loop-and-bell.test.cjs` tests the actual inline script using Node's built-in test runner. `.github/workflows/check.yml` runs those tests. No dependency manifests or build step are needed. Keep the standalone layout until a deliberate restructuring is requested.
 
 The existing `.agents/`, `.codex/`, `.aws/`, and `.git/` directories are reserved environment directories. Do not use them for application files or modify them as part of routine contributions.
 

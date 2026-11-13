@@ -44,7 +44,7 @@ function loadApp({ reduced = false, date = '2026-10-05T09:00:00Z', random } = {}
     requestAnimationFrame() { return ++id; }, cancelAnimationFrame() {},
     Math: Object.assign(Object.create(Math), random ? { random } : {})
   });
-  vm.runInContext(script.replace(/\}\)\(\);\s*$/, `globalThis.api={EX,POSES,PROGRAM,state,els,createWarmup,buildSteps,startSession,beginWorkStep,pauseTimer,exitSession,renderSessionStep,renderDay,renderHome,show,openPreview,closePreview,movementGuide,figureSVG,PREP_SECONDS,get timer(){return activeTimer;}};})();`), context);
+  vm.runInContext(script.replace(/\}\)\(\);\s*$/, `globalThis.api={EX,ART,PROGRAM,state,els,createWarmup,buildSteps,startSession,beginWorkStep,pauseTimer,exitSession,renderSessionStep,renderDay,renderHome,show,openPreview,closePreview,movementGuide,artFor,PREP_SECONDS,get timer(){return activeTimer;}};})();`), context);
   return {
     app: context.api, elements,
     advance(ms) { now += ms; for (const fn of [...intervals.values()]) fn(); },
@@ -56,31 +56,29 @@ function loadApp({ reduced = false, date = '2026-10-05T09:00:00Z', random } = {}
   };
 }
 
-test('all 31 original exercises and 15 warmup options have complete instructions and phases', () => {
+test('all exercises have complete instructions and valid illustration references', () => {
   const { app } = loadApp();
   assert.equal(Object.keys(app.EX).length, 46);
   for (const [id, meta] of Object.entries(app.EX)) {
     for (const field of ['cue', 'setup', 'move', 'breathe', 'avoid', 'easier']) assert.ok(meta[field]?.length > 15, `${id}: ${field}`);
-    assert.equal(meta.phases.length, app.POSES[meta.illus].length, id);
-    for (const [i, phase] of meta.phases.entries()) {
-      const pose = app.POSES[meta.illus][i];
-      assert.ok(pose[phase[2]], `${id}: checkpoint exists`);
-      for (const joint of ['h', 's', 'e', 'a', 'p', 'k', 'f', 'e2', 'a2', 'k2', 'f2']) {
-        assert.ok(pose[joint].every(Number.isFinite), `${id}: finite ${joint}`);
-      }
-      const svg = app.figureSVG(pose, meta.illus, phase[2], meta.name);
-      assert.match(svg, /role="img"/);
-      assert.match(svg, /focus-ring/);
-      assert.doesNotMatch(svg, /NaN|undefined/);
+    const image = app.artFor(meta.illus);
+    if (!image.startsWith('data:')) {
+      assert.match(image, /^assets\/exercises\/[a-z]+\.webp$/, id);
+      continue;
     }
+    assert.match(image, /^data:image\/webp;base64,/, id);
+    const bytes = Buffer.from(image.split(',')[1], 'base64');
+    assert.equal(bytes.toString('ascii', 0, 4), 'RIFF', id);
+    assert.equal(bytes.toString('ascii', 8, 12), 'WEBP', id);
+    assert.equal(bytes.readUInt32LE(4) + 8, bytes.length, `${id}: complete image`);
   }
 });
 
-test('exercise variants have their own keyframes and every scheduled exercise resolves', () => {
+test('exercise variants have distinct illustrations and every scheduled exercise resolves', () => {
   const { app } = loadApp();
   for (const [variant, base] of [['shouldertap', 'plank'], ['reachunder', 'sideplank'], ['glutemarch', 'hipthrust'], ['clamshell', 'sideraise'], ['calfraisesl', 'calfraise']]) {
     assert.notEqual(app.EX[variant].illus, app.EX[base].illus);
-    assert.notDeepEqual(app.POSES[app.EX[variant].illus], app.POSES[app.EX[base].illus]);
+    assert.notEqual(app.artFor(app.EX[variant].illus), app.artFor(app.EX[base].illus));
   }
   for (const week of ['A', 'B']) for (const day of app.PROGRAM[week]) for (const item of day.ex) assert.ok(app.EX[item.id]);
 });
@@ -166,7 +164,7 @@ test('timed side planks schedule both sides for every set', () => {
 test('regular workouts keep manual starts after rests', () => {
   const env = loadApp(), { app } = env;
   app.startSession('A', 2); assert.equal(app.timer, null);
-  app.beginWorkStep(); env.advance(5000); env.advance(1200000);
+  app.beginWorkStep(); env.advance(5000); env.advance(app.state.steps[0].dur * 1000);
   assert.equal(app.timer.phase, 'rest'); env.advance(60000);
   assert.equal(app.state.stepPos, 1); assert.equal(app.timer, null);
 });
@@ -189,16 +187,17 @@ test('every exercise preview contains coaching, labeled checkpoints, and working
   for (let i = 0; i < 46; i++) {
     app.openPreview(i);
     const markup = app.els.modalRoot.innerHTML;
-    for (const label of ['Setup', 'Move', 'Breathe', 'Avoid', 'Make it easier', 'Movement phases']) assert.ok(markup.includes(label));
-    assert.match(markup, /role="dialog"/); assert.doesNotMatch(markup, /NaN|undefined/);
+    for (const label of ['Start', 'Move', 'Breathe', 'Avoid', 'Make it easier', 'Key positions']) assert.ok(markup.includes(label), label);
+    assert.match(markup, /role="dialog"/); assert.doesNotMatch(markup.replace(/data:image\/webp;base64,[A-Za-z0-9+/=]+/g, ''), /NaN|undefined/);
     app.closePreview(); assert.equal(app.els.modalRoot.innerHTML, '');
   }
 });
 
-test('reduced-motion users retain all phase diagrams without animated controls', () => {
+test('reduced-motion users retain the static illustration without animated controls', () => {
   const { app } = loadApp({ reduced: true });
   const guide = app.movementGuide(app.EX.halo);
-  assert.equal((guide.match(/<figure /g) || []).length, 4);
+  assert.equal((guide.match(/<figure /g) || []).length, 1);
+  assert.match(guide, /assets\/exercises\/halo.webp/);
   assert.doesNotMatch(guide, /togglemotion/);
 });
 
